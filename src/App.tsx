@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useReducedMotion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +20,9 @@ import { GitHubActivity } from './components/GitHubActivity';
 import { ScrollSectionWrapper } from './components/ScrollSectionWrapper';
 import { ProjectDetailPage, getProjectSlug } from './components/ProjectDetailPage';
 import { WebCorner } from './components/WebCorner';
+import { CursorSpotlight } from './components/CursorSpotlight';
+import { Magnetic } from './components/Magnetic';
+import { TiltCard } from './components/TiltCard';
 
 // Custom SVG Icons with uniform stroke weights
 const GithubIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -108,6 +111,7 @@ function MainPortfolio() {
   const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const location = useLocation();
+  const [activeSectionIndex, setActiveSectionIndex] = useState(1);
 
   useEffect(() => {
     if (location.hash) {
@@ -119,6 +123,34 @@ function MainPortfolio() {
       }
     }
   }, [location]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const sections = ['about', 'projects', 'skills', 'certifications', 'education', 'github-contributions', 'contact'];
+    
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 350;
+      let currentIdx = 1;
+
+      for (let i = 0; i < sections.length; i++) {
+        const el = document.getElementById(sections[i]);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            currentIdx = i + 1;
+            break;
+          }
+        }
+      }
+      setActiveSectionIndex(currentIdx);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Overall scroll progress bar
   const { scrollYProgress } = useScroll();
@@ -134,9 +166,6 @@ function MainPortfolio() {
   const heroOpacity = useTransform(heroScroll, [0, 0.6], [1, 0]);
   const smoothHeroY = useSpring(heroTextY, { stiffness: 90, damping: 22 });
   const smoothHeroOpacity = useSpring(heroOpacity, { stiffness: 90, damping: 22 });
-
-
-
 
   const handlePlaceholderClick = (field?: string) => {
     const term = field ? field.toLowerCase() : '';
@@ -155,8 +184,28 @@ function MainPortfolio() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={transitionEntrance}
-      className="bg-near-black text-fdf3f2 min-h-screen relative font-sans selection:bg-primary-red selection:text-near-black"
+      className="bg-[#080808] text-fdf3f2 min-h-screen relative font-sans selection:bg-primary-red selection:text-near-black overflow-x-hidden"
     >
+      {/* 2. Cursor Spotlight */}
+      <CursorSpotlight />
+
+      {/* 6. Minimal Scroll Progress Indicator */}
+      <div className="fixed bottom-6 left-6 z-[60] font-mono text-[10px] uppercase tracking-widest text-muted-grey bg-[#080808]/70 border border-white/5 backdrop-blur-md px-4 py-2 rounded-full select-none flex items-center gap-2 shadow-xl">
+        <span className="text-primary-red font-bold">0{activeSectionIndex}</span>
+        <span className="opacity-30">—</span>
+        <span>07</span>
+      </div>
+
+      {/* Ambient background noise overlay */}
+      <div className="absolute inset-0 bg-noise pointer-events-none z-0" />
+
+      {/* Background Ambient Lighting (Blurred Gradient Orbs) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-primary-red/4 blur-[130px] ambient-glow-pulse" />
+        <div className="absolute top-[40%] right-[-15%] w-[65vw] h-[65vw] rounded-full bg-primary-red/3 blur-[160px] ambient-glow-pulse" style={{ animationDelay: '-3s' }} />
+        <div className="absolute bottom-[20%] left-[-20%] w-[55vw] h-[55vw] rounded-full bg-primary-red/4 blur-[140px] ambient-glow-pulse" style={{ animationDelay: '-6s' }} />
+      </div>
+
       {/* Scroll Progress Indicator */}
       <motion.div
         style={{ scaleX, transformOrigin: 'left' }}
@@ -167,9 +216,9 @@ function MainPortfolio() {
       <Navbar />
 
       {/* 1. HERO SECTION (Asymmetric, Left-Heavy Layout) */}
-      <div ref={heroRef} id="hero-header" className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden bg-near-black">
+      <div ref={heroRef} id="hero-header" className="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
         {/* Subtle gridlines */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
         <WebCorner position="top-left" />
 
         <div className="max-w-6xl mx-auto px-6 w-full relative z-20">
@@ -182,10 +231,10 @@ function MainPortfolio() {
           >
             {/* Left Column: Bold Asymmetric Headline Statement */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              {/* Availability Label */}
-              <motion.div variants={fadeInUp} className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary-red animate-pulse" />
-                <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+              {/* Availability Label (Subtle glass badge) */}
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-white/5 backdrop-blur-md w-fit">
+                <span className="w-2 h-2 bg-primary-red rounded-full animate-pulse" />
+                <span className="font-mono text-[10px] uppercase tracking-widest text-primary-red font-bold">
                   AVAILABLE FOR FREELANCE & FULL-TIME OPPORTUNITIES
                 </span>
               </motion.div>
@@ -207,121 +256,132 @@ function MainPortfolio() {
                 {PORTFOLIO_CONFIG.positioning}I combine modern web technologies with AI and automation to turn ideas into practical, production-ready solutions.
               </motion.p>
 
-              {/* CTAs list (minimalistic vertical list layout) */}
-              <motion.div variants={fadeInUp} className="flex flex-col gap-3 font-mono text-xs uppercase tracking-wider">
-                <motion.a
-                  href="#/#projects"
-                  whileHover={{ x: 6 }}
-                  transition={springHover}
-                  className="bg-primary-red text-near-black px-6 py-4 rounded-none font-bold transition-all flex items-center justify-between cursor-pointer outline-none select-none"
-                >
-                  <span>View Flagship Projects</span>
-                  <ChevronRight className="w-4 h-4" />
-                </motion.a>
-
-                <motion.a
-                  href={PORTFOLIO_CONFIG.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ x: 6 }}
-                  transition={springHover}
-                  className="border border-border-strong hover:border-primary-red hover:bg-primary-red/5 text-fdf3f2 px-6 py-4 rounded-none transition-all flex items-center justify-between cursor-pointer outline-none select-none"
-                >
-                  <span className="flex items-center gap-2">
-                    <GithubIcon className="text-primary-red" />
-                    GitHub Codebases
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-muted-grey" />
-                </motion.a>
-
-                {PORTFOLIO_CONFIG.linkedinUrl ? (
+              {/* CTAs list (minimalistic vertical list layout with premium glassmorphism buttons) */}
+              <motion.div variants={fadeInUp} className="flex flex-col gap-3.5 font-mono text-xs uppercase tracking-wider">
+                <Magnetic maxMovement={6}>
                   <motion.a
-                    href={PORTFOLIO_CONFIG.linkedinUrl}
+                    href="#/#projects"
+                    whileHover={{ y: -2 }}
+                    transition={springHover}
+                    className="bg-primary-red text-near-black px-6 py-4 rounded-full font-bold transition-all flex items-center justify-between cursor-pointer outline-none select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:shadow-[0_6px_25px_rgba(235,74,66,0.35)] w-full"
+                  >
+                    <span>View Flagship Projects</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.a>
+                </Magnetic>
+
+                <Magnetic maxMovement={4}>
+                  <motion.a
+                    href={PORTFOLIO_CONFIG.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ x: 6 }}
+                    whileHover={{ y: -2 }}
                     transition={springHover}
-                    className="border border-border-strong hover:border-primary-red hover:bg-primary-red/5 text-fdf3f2 px-6 py-4 rounded-none transition-all flex items-center justify-between cursor-pointer outline-none select-none"
+                    className="glass-card glass-card-hover px-6 py-4 rounded-full text-fdf3f2 flex items-center justify-between cursor-pointer outline-none select-none w-full"
                   >
                     <span className="flex items-center gap-2">
-                      <LinkedinIcon className="text-primary-red" />
-                      LinkedIn Profile
+                      <GithubIcon className="text-primary-red" />
+                      GitHub Codebases
                     </span>
                     <ArrowUpRight className="w-4 h-4 text-muted-grey" />
                   </motion.a>
+                </Magnetic>
+
+                {PORTFOLIO_CONFIG.linkedinUrl ? (
+                  <Magnetic maxMovement={4}>
+                    <motion.a
+                      href={PORTFOLIO_CONFIG.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ y: -2 }}
+                      transition={springHover}
+                      className="glass-card glass-card-hover px-6 py-4 rounded-full text-fdf3f2 flex items-center justify-between cursor-pointer outline-none select-none w-full"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LinkedinIcon className="text-primary-red" />
+                        LinkedIn Profile
+                      </span>
+                      <ArrowUpRight className="w-4 h-4 text-muted-grey" />
+                    </motion.a>
+                  </Magnetic>
                 ) : (
-                  <motion.button
-                    onClick={() => handlePlaceholderClick('LinkedIn URL')}
-                    whileHover={{ x: 6 }}
-                    transition={springHover}
-                    className="border border-border-strong hover:border-primary-red/30 hover:bg-primary-red/5 text-muted-grey px-6 py-4 rounded-none transition-all flex items-center justify-between cursor-pointer outline-none text-left select-none"
-                  >
-                    <span className="flex items-center gap-2">
-                      <LinkedinIcon className="opacity-45" />
-                      LinkedIn [Add]
-                    </span>
-                    <span className="text-[10px] text-primary-red/50">[Configure]</span>
-                  </motion.button>
+                  <Magnetic maxMovement={4}>
+                    <motion.button
+                      onClick={() => handlePlaceholderClick('LinkedIn URL')}
+                      whileHover={{ y: -2 }}
+                      transition={springHover}
+                      className="glass-card glass-card-hover px-6 py-4 rounded-full text-muted-grey flex items-center justify-between cursor-pointer outline-none text-left select-none opacity-80 w-full"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LinkedinIcon className="opacity-45" />
+                        LinkedIn [Add]
+                      </span>
+                      <span className="text-[10px] text-primary-red/50">[Configure]</span>
+                    </motion.button>
+                  </Magnetic>
                 )}
 
-                <motion.button
-                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                  whileHover={{ x: 6 }}
-                  transition={springHover}
-                  className="border border-border-strong hover:border-primary-red hover:bg-primary-red/5 text-fdf3f2 px-6 py-4 rounded-none transition-all flex items-center justify-between cursor-pointer outline-none select-none w-full text-left"
-                >
-                  <span className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary-red" />
-                    Contact Me
-                  </span>
-                  <ChevronRight className="w-4 h-4 text-muted-grey" />
-                </motion.button>
+                <Magnetic maxMovement={4}>
+                  <motion.button
+                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                    whileHover={{ y: -2 }}
+                    transition={springHover}
+                    className="glass-card glass-card-hover px-6 py-4 rounded-full text-fdf3f2 flex items-center justify-between cursor-pointer outline-none select-none w-full text-left"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary-red" />
+                      Contact Me
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-muted-grey" />
+                  </motion.button>
+                </Magnetic>
               </motion.div>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* 2. ABOUT / INTRODUCTION (Light Section, Asymmetric split) */}
-      <ScrollSectionWrapper id="about" className="bg-off-white text-near-black py-24 px-6 relative overflow-hidden border-t border-b border-near-black/5">
-        <WebCorner position="top-right" variant="light" />
+      {/* 2. ABOUT / INTRODUCTION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="about" className="py-24 px-6 relative overflow-hidden border-t border-b border-white/5">
+        <WebCorner position="top-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           {/* Left Column: Number, Title, Profile Frame */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">SYSTEM://ABOUT_ME</span>
               {/* Bleeding outline number */}
-              <div className="font-mono text-8xl md:text-9xl text-near-black/5 font-extrabold leading-none select-none -ml-4">01</div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-near-black leading-none uppercase mt-2">
+              <div className="font-mono text-8xl md:text-9xl text-white/5 font-extrabold leading-none select-none -ml-4">01</div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 PROFILE
               </h2>
             </div>
 
             {/* Visual Photo frame replaced with a clean developer identity card */}
-            <div className="border border-near-black/10 p-2 bg-near-black/5 rounded-none relative mt-4 max-w-xs w-full">
-              <div className="h-64 w-full bg-white border border-near-black/20 p-6 rounded-none flex flex-col justify-between select-none relative overflow-hidden">
+            <div className="glass-card p-6 rounded-2xl relative mt-4 max-w-xs w-full shadow-2xl overflow-hidden hover:border-primary-red/30 transition-all duration-300">
+              <div className="h-52 w-full flex flex-col justify-between select-none relative z-10">
                 {/* Micro tech grid line background inside card */}
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(15,15,15,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(15,15,15,0.015)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
 
                 {/* Header detail */}
                 <div className="relative z-10 flex flex-col">
-                  <h4 className="font-sans text-xl font-bold tracking-tight text-near-black leading-none uppercase">
+                  <h4 className="font-sans text-xl font-bold tracking-tight text-fdf3f2 leading-none uppercase">
                     ROHITH GOWDA S.
                   </h4>
                   <span className="font-mono text-[10px] text-primary-red uppercase tracking-wider font-bold mt-1.5 block">
                     FULL-STACK DEVELOPER
                   </span>
-                  <p className="text-xs text-muted-grey leading-relaxed mt-4 max-w-[200px]">
+                  <p className="text-xs text-muted-grey leading-relaxed mt-4 max-w-[220px]">
                     Building web apps, AI tools & automation systems.
                   </p>
                 </div>
 
                 {/* Footer details */}
-                <div className="relative z-10 border-t border-near-black/10 pt-4 flex flex-col gap-1.5 font-mono text-[9px] uppercase tracking-wider text-muted-grey">
+                <div className="relative z-10 border-t border-white/10 pt-4 flex flex-col gap-1.5 font-mono text-[9px] uppercase tracking-wider text-muted-grey">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-primary-red rounded-full animate-pulse" />
                     <span>BANGALORE, INDIA</span>
                   </div>
-                  <div className="font-bold text-near-black">
+                  <div className="font-bold text-fdf3f2">
                     OPEN TO WORK • FREELANCE
                   </div>
                 </div>
@@ -329,28 +389,28 @@ function MainPortfolio() {
             </div>
           </div>
 
-          {/* Right Column: Bio Narrative & flat tags */}
+          {/* Right Column: Bio Narrative & glass tags */}
           <div className="lg:col-span-8 lg:mt-12 flex flex-col gap-8">
             {/* Currently Building Status Line */}
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-grey">
               <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
-              <span>Currently building: <span className="font-sans normal-case font-medium text-near-black/80">{PORTFOLIO_CONFIG.currentlyBuilding}</span></span>
+              <span>Currently building: <span className="font-sans normal-case font-medium text-fdf3f2/90">{PORTFOLIO_CONFIG.currentlyBuilding}</span></span>
             </div>
 
-            <h3 className="text-xl md:text-2xl font-bold tracking-tight text-near-black leading-tight max-w-2xl">
+            <h3 className="text-xl md:text-2xl font-bold tracking-tight text-fdf3f2 leading-tight max-w-2xl">
               I’m a developer who enjoys turning ideas into things that actually work.
             </h3>
-            <p className="text-base text-near-black/75 leading-relaxed">
+            <p className="text-base text-muted-grey leading-relaxed">
               {PORTFOLIO_CONFIG.careerObjective} Most of my learning comes from building real projects, breaking and fixing things, and understanding how systems work end-to-end.
             </p>
 
-            <div className="border-t border-near-black/10 pt-6">
-              <h4 className="font-mono text-xs uppercase tracking-wider text-near-black/50 font-bold mb-4">Interests & Core Domains</h4>
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="font-mono text-xs uppercase tracking-wider text-muted-grey/60 font-bold mb-4">Interests & Core Domains</h4>
               <div className="flex flex-wrap gap-2">
                 {PORTFOLIO_CONFIG.interests.map((interest) => (
                   <span
                     key={interest}
-                    className="font-mono text-xs text-near-black bg-near-black/5 border border-near-black/10 px-3 py-1.5 rounded-none hover:bg-near-black hover:text-off-white transition-colors"
+                    className="font-mono text-xs text-fdf3f2 bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:border-primary-red/50 hover:bg-primary-red/10 transition-all duration-300"
                   >
                     {interest}
                   </span>
@@ -361,20 +421,15 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 3. FEATURED PROJECTS SECTION (Redesigned with Ripped Paper style and glowing silhouette) */}
-      <ScrollSectionWrapper id="projects" className="py-24 px-6 bg-near-black relative overflow-hidden">
-        <WebCorner position="bottom-left" />
-        {/* Ripped paper top edge (off-white tearing revealing black projects section) */}
-        <div className="absolute top-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[-1px]">
-          <svg className="w-full h-8 text-off-white fill-current" viewBox="0 0 1440 40" preserveAspectRatio="none">
-            <path d="M0,0 L1440,0 L1440,20 L1420,15 L1400,22 L1380,17 L1360,25 L1340,19 L1320,24 L1300,16 L1280,21 L1260,18 L1240,23 L1220,15 L1200,20 L1180,17 L1160,24 L1140,18 L1120,22 L1100,16 L1080,21 L1060,15 L1040,20 L1020,17 L1000,23 L980,19 L960,22 L940,16 L920,21 L900,18 L880,24 L860,15 L840,20 L820,17 L800,22 L780,16 L760,21 L740,18 L720,23 L700,15 L680,20 L660,17 L640,24 L620,18 L600,22 L580,16 L560,21 L540,15 L520,20 L500,17 L480,23 L460,19 L440,22 L420,16 L400,21 L380,18 L360,24 L340,15 L320,20 L300,17 L280,22 L260,16 L240,21 L220,18 L200,23 L180,15 L160,20 L140,17 L120,24 L100,18 L80,22 L60,16 L40,21 L20,15 L0,20 Z" />
-          </svg>
-        </div>
+      {/* 3. FEATURED PROJECTS SECTION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="projects" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="bottom-left" variant="dark" />
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-20 my-4">
           {/* Left Column: Heading and projects list */}
           <div className="lg:col-span-7 flex flex-col gap-8">
             <div className="relative">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">REGISTRY://FLAGSHIPS</span>
               <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -ml-4">02</div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 PROJECTS
@@ -385,54 +440,71 @@ function MainPortfolio() {
               Practical <strong className="text-fdf3f2">full-stack web apps</strong> and <strong className="text-fdf3f2">AI systems</strong> built to solve real-world problems. Click on a project to explore its architecture.
             </p>
 
-            <div className="flex flex-col divide-y divide-border-subtle/50 mt-4">
+            <div className="flex flex-col gap-5 mt-4">
               {PORTFOLIO_CONFIG.featuredProjects.map((project, index) => {
                 const slug = getProjectSlug(project.title);
                 return (
-                  <MotionLink
-                    key={index}
-                    to={`/projects/${slug}`}
-                    whileHover={{ x: 6 }}
-                    transition={springHover}
-                    className="group/row flex flex-col md:flex-row md:items-center justify-between py-6 first:pt-0 last:pb-0 gap-6 cursor-pointer text-left outline-none focus-visible:bg-white/5"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h4 className="text-xl font-bold text-fdf3f2 group-hover/row:text-primary-red transition-colors">
-                          {project.title}
-                        </h4>
-                        <span
-                          className={`font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-none border ${project.badge === 'Live'
-                            ? 'border-green-500/30 text-green-400 bg-green-500/5'
-                            : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5'
-                            }`}
-                        >
-                          {project.badge}
-                        </span>
-                      </div>
-
-                      <p className="text-sm text-muted-grey leading-relaxed max-w-2xl group-hover/row:text-fdf3f2 transition-colors mb-4">
-                        {project.description}
-                      </p>
-
-                      {/* Tech tags */}
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {project.techStack.map((tech) => (
+                  <TiltCard key={index} className="w-full">
+                    <MotionLink
+                      to={`/projects/${slug}`}
+                      whileHover={{ y: -4 }}
+                      transition={springHover}
+                      className="glass-card glass-card-hover p-6 rounded-2xl group/row flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer text-left outline-none h-full w-full"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h4 className="text-xl font-bold text-fdf3f2 group-hover/row:text-primary-red transition-colors">
+                            {project.title}
+                          </h4>
                           <span
-                            key={tech}
-                            className="font-mono text-[10px] text-fdf3f2/60 bg-dark-grey border border-border-subtle px-2 py-0.5 rounded-none"
+                            className={`font-mono text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${project.badge === 'Live'
+                              ? 'border-green-500/30 text-green-400 bg-green-500/5'
+                              : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5'
+                              }`}
                           >
-                            {tech}
+                            {project.badge}
                           </span>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
 
-                    {/* Hover Arrow Circle */}
-                    <div className="w-9 h-9 rounded-none border border-border-strong flex items-center justify-center text-muted-grey bg-near-black group-hover/row:bg-primary-red group-hover/row:border-primary-red group-hover/row:text-near-black transition-all duration-200 shrink-0 self-start md:self-center">
-                      <ArrowUpRight className="w-4 h-4 transform group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 transition-transform" />
-                    </div>
-                  </MotionLink>
+                        <p className="text-sm text-muted-grey leading-relaxed max-w-2xl group-hover/row:text-fdf3f2 transition-colors mb-4">
+                          {project.description}
+                        </p>
+
+                        {/* Tech tags */}
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {project.techStack.map((tech) => (
+                            <span
+                              key={tech}
+                              className="font-mono text-[10px] text-fdf3f2/70 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Project Card Information Reveal (Role & case study trigger) */}
+                        <div className="mt-4 pt-4 border-t border-white/5 flex flex-col gap-2 md:max-h-0 md:opacity-0 md:group-hover/row:max-h-24 md:group-hover/row:opacity-100 max-h-24 opacity-100 transition-all duration-300 overflow-hidden">
+                          {project.role && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">Role:</span>
+                              <span className="font-sans text-xs text-fdf3f2/80 truncate max-w-lg">{project.role}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">Action:</span>
+                            <span className="font-mono text-[10px] uppercase tracking-wider text-primary-red flex items-center gap-1">
+                              EXPLORE CASE STUDY <ArrowUpRight className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hover Arrow Circle (Rounded glass style) */}
+                      <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-muted-grey bg-white/5 group-hover/row:bg-primary-red group-hover/row:border-primary-red group-hover/row:text-near-black transition-all duration-300 shrink-0 self-start md:self-center">
+                        <ArrowUpRight className="w-4 h-4 transform group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 transition-transform" />
+                      </div>
+                    </MotionLink>
+                  </TiltCard>
                 );
               })}
             </div>
@@ -441,8 +513,8 @@ function MainPortfolio() {
           {/* Right Column: Glowing circular spotlight with dark silhouette graphic */}
           <div className="lg:col-span-5 flex items-center justify-center relative min-h-[350px] lg:min-h-[450px] mt-8 lg:mt-0 select-none">
             {/* Glowing red circular background spotlight with richer radial gradients */}
-            <div className="absolute w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.25)_0%,transparent_70%)] pointer-events-none z-0" />
-            <div className="absolute w-60 h-60 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.4)_0%,transparent_70%)] pointer-events-none z-0" />
+            <div className="absolute w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.18)_0%,transparent_70%)] pointer-events-none z-0" />
+            <div className="absolute w-60 h-60 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.28)_0%,transparent_70%)] pointer-events-none z-0" />
 
             {/* Silhouette / Graphic Container */}
             <div className="relative z-10 w-full max-w-sm aspect-square flex items-center justify-center p-4">
@@ -454,22 +526,16 @@ function MainPortfolio() {
             </div>
           </div>
         </div>
-
-        {/* Ripped paper bottom edge (off-white tearing revealing background underneath) */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[1px]">
-          <svg className="w-full h-8 text-off-white fill-current" viewBox="0 0 1440 40" preserveAspectRatio="none">
-            <path d="M0,40 L1440,40 L1440,20 L1420,25 L1400,18 L1380,23 L1360,15 L1340,21 L1320,16 L1300,24 L1280,19 L1260,22 L1240,17 L1220,25 L1200,20 L1180,23 L1160,16 L1140,22 L1120,18 L1100,24 L1080,19 L1060,25 L1040,20 L1020,23 L1000,17 L980,21 L960,18 L940,24 L920,19 L900,22 L880,17 L860,25 L840,20 L820,23 L800,16 L780,22 L760,18 L740,24 L720,19 L700,25 L680,20 L660,23 L640,17 L620,21 L600,18 L580,24 L560,19 L540,22 L520,17 L500,25 L480,20 L460,23 L440,16 L420,22 L400,18 L380,24 L360,19 L340,25 L320,20 L300,23 L280,17 L260,21 L240,18 L220,24 L200,19 L180,22 L160,17 L140,25 L120,20 L100,23 L80,16 L60,22 L40,18 L20,24 L0,20 Z" />
-          </svg>
-        </div>
       </ScrollSectionWrapper>
 
-      {/* 4. TECHNICAL SKILLS SECTION (Staggered layout) */}
-      <ScrollSectionWrapper id="skills" className="py-24 px-6 bg-dark-grey/20 relative overflow-hidden border-t border-b border-border-subtle/50">
-        <WebCorner position="top-right" />
+      {/* 4. TECHNICAL SKILLS SECTION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="skills" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="top-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           {/* Left Column: Outline number, title, objective note */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">CAPABILITIES://TECH_STACK</span>
               <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -ml-4">03</div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 CAPABILITIES
@@ -481,7 +547,7 @@ function MainPortfolio() {
             </p>
 
             {/* Growth Roadmap */}
-            <div className="mt-4 border border-dashed border-border-strong bg-primary-red/5 p-4 rounded-none flex items-start gap-3">
+            <div className="mt-4 border border-dashed border-primary-red/30 bg-primary-red/5 p-5 rounded-2xl backdrop-blur-md flex items-start gap-3">
               <Sparkles className="w-4 h-4 text-primary-red shrink-0 mt-0.5" />
               <p className="text-xs text-muted-grey leading-relaxed">
                 <strong className="text-fdf3f2 block mb-1">Development Focus</strong>
@@ -493,16 +559,16 @@ function MainPortfolio() {
           {/* Right Column: Arsenal Grid */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {PORTFOLIO_CONFIG.skills.map((skillGroup, index) => (
-              <div key={index} className="border border-border-subtle bg-near-black/30 p-6 rounded-none flex flex-col justify-between">
+              <div key={index} className="glass-card glass-card-hover p-6 rounded-2xl flex flex-col justify-between">
                 <div>
-                  <h4 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4 border-b border-border-subtle pb-2">
+                  <h4 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4 border-b border-white/10 pb-2">
                     {skillGroup.category}
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {skillGroup.items.map((skill) => (
                       <span
                         key={skill}
-                        className="font-sans text-xs text-fdf3f2/90 bg-near-black/50 border border-border-subtle px-2.5 py-1 rounded-none"
+                        className="font-sans text-xs text-fdf3f2/90 bg-white/5 border border-white/5 px-2.5 py-1 rounded-full"
                       >
                         {skill}
                       </span>
@@ -515,12 +581,13 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 5. CERTIFICATIONS (Card grid layout) */}
-      <ScrollSectionWrapper id="certifications" className="py-24 px-6 bg-dark-grey/20 relative overflow-hidden border-t border-b border-border-subtle/50">
-        <WebCorner position="top-left" />
+      {/* 5. CERTIFICATIONS (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="certifications" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="top-left" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">CREDENTIALS://PLATFORMS</span>
               <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -ml-4">04</div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 CREDENTIALS
@@ -532,7 +599,7 @@ function MainPortfolio() {
             </p>
 
             {/* Summary counts */}
-            <div className="flex flex-col gap-2 border-t border-border-subtle/50 pt-5 mt-2">
+            <div className="flex flex-col gap-2 border-t border-white/10 pt-5 mt-2">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-grey/60">Total</span>
                 <span className="font-mono text-xs font-bold text-fdf3f2">{PORTFOLIO_CONFIG.certifications.length}</span>
@@ -551,12 +618,8 @@ function MainPortfolio() {
               {PORTFOLIO_CONFIG.certifications.map((cert, index) => (
                 <div
                   key={index}
-                  className="group border border-border-subtle bg-near-black hover:border-primary-red/30 rounded-none p-5 flex flex-col justify-between gap-4 transition-colors duration-200 relative overflow-hidden"
+                  className="group glass-card glass-card-hover rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden"
                 >
-                  {/* Corner accent lines (visible on hover) */}
-                  <div className="absolute top-0 left-0 w-5 h-[1px] bg-primary-red opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  <div className="absolute top-0 left-0 w-[1px] h-5 bg-primary-red opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-
                   <div className="flex flex-col gap-2">
                     {/* Category tag */}
                     <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/70 font-bold">
@@ -599,9 +662,9 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 6. EDUCATION (Minimal layout, no card framing) */}
-      <ScrollSectionWrapper id="education" className="py-24 px-6 bg-near-black relative overflow-hidden">
-        <WebCorner position="bottom-right" />
+      {/* 6. EDUCATION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="education" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="bottom-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
@@ -616,7 +679,7 @@ function MainPortfolio() {
             </p>
           </div>
 
-          <div className="lg:col-span-8 border-t border-border-subtle pt-8 flex items-start gap-4">
+          <div className="lg:col-span-8 border-t border-white/10 pt-8 flex items-start gap-4">
             <GraduationCap className="w-5 h-5 text-primary-red shrink-0 mt-1" />
             <div className="flex-1">
               <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">Active Academic Coordinates</span>
@@ -633,13 +696,13 @@ function MainPortfolio() {
                 Currently pursuing coursework at <strong className="text-fdf3f2">{PORTFOLIO_CONFIG.education.institution}</strong> in {PORTFOLIO_CONFIG.education.location}.
               </p>
 
-              <div className="mt-8 border-t border-border-subtle/50 pt-6">
+              <div className="mt-8 border-t border-white/10 pt-6">
                 <span className="font-mono text-xs text-muted-grey/60 uppercase tracking-widest font-bold block mb-3">Core Coursework Anchor</span>
                 <div className="flex flex-wrap gap-1.5">
                   {["Data Structures", "DBMS", "Operating Systems", "Java", "C Programming", "Relational Algebra", "SQL", "Web Applications"].map((course) => (
                     <span
                       key={course}
-                      className="font-sans text-xs text-muted-grey bg-dark-grey border border-border-subtle px-2.5 py-1 rounded-none"
+                      className="font-sans text-xs text-fdf3f2/80 bg-white/5 border border-white/5 px-3 py-1 rounded-full"
                     >
                       {course}
                     </span>
@@ -651,9 +714,9 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 7. GITHUB ACTIVITIES */}
-      <ScrollSectionWrapper id="github-contributions" className="py-24 px-6 bg-dark-grey/10 relative overflow-hidden border-t border-b border-border-subtle/50">
-        <WebCorner position="bottom-left" />
+      {/* 7. GITHUB ACTIVITIES (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="github-contributions" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="bottom-left" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
@@ -674,44 +737,51 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 9. RESUME DOWNLOAD ACTION (Sharp Banner design) */}
-      <ScrollSectionWrapper id="resume-download" className="py-24 px-6 bg-near-black relative overflow-hidden">
-        <WebCorner position="top-right" />
+      {/* 9. RESUME DOWNLOAD ACTION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="resume-download" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="top-right" variant="dark" />
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="border border-border-strong bg-dark-grey/25 p-8 rounded-none text-center flex flex-col items-center justify-center gap-6 max-w-3xl mx-auto">
-            <FileText className="w-8 h-8 text-primary-red" />
-            <div className="flex flex-col gap-2">
+          <div className="glass-card p-10 md:p-12 rounded-3xl text-center flex flex-col items-center justify-center gap-6 max-w-3xl mx-auto shadow-2xl border border-white/10 relative overflow-hidden">
+            {/* Ambient lighting spot inside resume card */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(235,74,66,0.05)_0%,transparent_70%)] pointer-events-none" />
+
+            <FileText className="w-8 h-8 text-primary-red relative z-10" />
+            <div className="flex flex-col gap-2 relative z-10">
               <h4 className="text-xl font-bold text-fdf3f2">Download Resume</h4>
               <p className="text-sm text-muted-grey max-w-md mx-auto leading-relaxed">
                 Get a quick overview of my skills, projects, experience, and technical background.
               </p>
             </div>
             {PORTFOLIO_CONFIG.resumePath ? (
-              <a
-                href={PORTFOLIO_CONFIG.resumePath}
-                download="Rohith_Gowda_Resume.pdf"
-                className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-none font-bold transition-colors select-none"
-              >
-                DOWNLOAD RESUME →
-              </a>
+              <Magnetic maxMovement={5}>
+                <a
+                  href={PORTFOLIO_CONFIG.resumePath}
+                  download="Rohith_Gowda_Resume.pdf"
+                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-full font-bold transition-all select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 relative z-10 block"
+                >
+                  DOWNLOAD RESUME →
+                </a>
+              </Magnetic>
             ) : (
-              <button
-                onClick={() => handlePlaceholderClick()}
-                className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-none font-bold transition-colors select-none cursor-pointer outline-none"
-              >
-                DOWNLOAD RESUME →
-              </button>
+              <Magnetic maxMovement={5}>
+                <button
+                  onClick={() => handlePlaceholderClick()}
+                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-full font-bold transition-all select-none cursor-pointer outline-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 relative z-10"
+                >
+                  DOWNLOAD RESUME →
+                </button>
+              </Magnetic>
             )}
           </div>
         </div>
       </ScrollSectionWrapper>
 
-      {/* 7. CONTACT / CONNECTION SECTION (Redesigned centered layout) */}
-      <ScrollSectionWrapper id="contact" className="py-24 px-6 bg-dark-grey/20 relative overflow-hidden border-t border-border-subtle/50">
-        <WebCorner position="bottom-right" />
+      {/* 7. CONTACT / CONNECTION SECTION (Glassmorphism Redesign) */}
+      <ScrollSectionWrapper id="contact" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
+        <WebCorner position="bottom-right" variant="dark" />
         <div className="max-w-3xl mx-auto flex flex-col items-center relative z-10">
           {/* Heading with outline number 07 */}
-          <div className="relative text-center mb-16">
+          <div className="relative text-center mb-12">
             <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10">07</div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
               CONNECTION
@@ -721,114 +791,124 @@ function MainPortfolio() {
             </p>
           </div>
 
-          {/* Connection options as clean technical rows */}
-          <div className="w-full max-w-2xl flex flex-col divide-y divide-border-subtle/50 border-t border-b border-border-subtle/50 select-none">
-            {/* Email Row */}
-            <a
-              href={`mailto:${PORTFOLIO_CONFIG.contactEmail}`}
-              className="group py-6 flex items-center justify-between outline-none transition-colors duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-border-subtle group-hover:border-primary-red/30 rounded-none flex items-center justify-center bg-near-black transition-colors">
-                  <Mail className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+          {/* Connection options as clean frosted glass cards */}
+          <div className="w-full max-w-2xl flex flex-col gap-4 select-none">
+            {/* Email Card */}
+            <Magnetic maxMovement={4} className="w-full">
+              <a
+                href={`mailto:${PORTFOLIO_CONFIG.contactEmail}`}
+                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                    <Mail className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">EMAIL</span>
+                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5 select-all">
+                      {PORTFOLIO_CONFIG.contactEmail}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">EMAIL</span>
-                  <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5 select-all">
-                    {PORTFOLIO_CONFIG.contactEmail}
-                  </span>
-                </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-            </a>
+                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            </Magnetic>
 
-            {/* Phone Row */}
-            <a
-              href={`tel:${PORTFOLIO_CONFIG.contactPhone.replace(/\s+/g, '')}`}
-              className="group py-6 flex items-center justify-between outline-none transition-colors duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-border-subtle group-hover:border-primary-red/30 rounded-none flex items-center justify-center bg-near-black transition-colors">
-                  <PhoneIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+            {/* Phone Card */}
+            <Magnetic maxMovement={4} className="w-full">
+              <a
+                href={`tel:${PORTFOLIO_CONFIG.contactPhone.replace(/\s+/g, '')}`}
+                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                    <PhoneIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">PHONE</span>
+                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                      {PORTFOLIO_CONFIG.contactPhone}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">PHONE</span>
-                  <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                    {PORTFOLIO_CONFIG.contactPhone}
-                  </span>
-                </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-            </a>
+                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            </Magnetic>
 
-            {/* LinkedIn Row */}
-            <a
-              href={PORTFOLIO_CONFIG.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group py-6 flex items-center justify-between outline-none transition-colors duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-border-subtle group-hover:border-primary-red/30 rounded-none flex items-center justify-center bg-near-black transition-colors">
-                  <LinkedinIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+            {/* LinkedIn Card */}
+            <Magnetic maxMovement={4} className="w-full">
+              <a
+                href={PORTFOLIO_CONFIG.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                    <LinkedinIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">LINKEDIN</span>
+                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                      LinkedIn
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">LINKEDIN</span>
-                  <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                    LinkedIn
-                  </span>
-                </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-            </a>
+                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            </Magnetic>
 
-            {/* GitHub Row */}
-            <a
-              href={PORTFOLIO_CONFIG.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group py-6 flex items-center justify-between outline-none transition-colors duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-border-subtle group-hover:border-primary-red/30 rounded-none flex items-center justify-center bg-near-black transition-colors">
-                  <GithubIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+            {/* GitHub Card */}
+            <Magnetic maxMovement={4} className="w-full">
+              <a
+                href={PORTFOLIO_CONFIG.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                    <GithubIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">GITHUB</span>
+                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                      GitHub
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">GITHUB</span>
-                  <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                    GitHub
-                  </span>
-                </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-            </a>
+                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            </Magnetic>
 
-            {/* Instagram Row */}
-            <a
-              href={PORTFOLIO_CONFIG.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group py-6 flex items-center justify-between outline-none transition-colors duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border border-border-subtle group-hover:border-primary-red/30 rounded-none flex items-center justify-center bg-near-black transition-colors">
-                  <InstagramIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+            {/* Instagram Card */}
+            <Magnetic maxMovement={4} className="w-full">
+              <a
+                href={PORTFOLIO_CONFIG.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                    <InstagramIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">INSTAGRAM</span>
+                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                      Instagram
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">INSTAGRAM</span>
-                  <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                    Instagram
-                  </span>
-                </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-            </a>
+                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            </Magnetic>
           </div>
         </div>
       </ScrollSectionWrapper>
 
       {/* FOOTER */}
-      <footer className="border-t border-border-subtle bg-near-black py-8 px-6 text-center select-none text-muted-grey text-xs font-mono">
+      <footer className="border-t border-white/5 bg-transparent py-8 px-6 text-center select-none text-muted-grey text-xs font-mono">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} {PORTFOLIO_CONFIG.name}. All rights reserved.</p>
           <div className="flex items-center gap-6">

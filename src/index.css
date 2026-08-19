@@ -4,7 +4,7 @@
 @theme {
   /* WCAG AA Compliant Red (>4.5:1 contrast on black) */
   --color-primary-red: #eb4a42;
-  --color-near-black: #0f0f0f;
+  --color-near-black: #080808;
   --color-off-white: #fdf3f2;
   --color-off-white-light: #fafafa;
   --color-muted-grey: #8a8a8a;
@@ -25,10 +25,73 @@
   --font-size-6xl: 56px;
 }
 
+/* Glassmorphism & Ambient lighting utility classes */
+@utility glass-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background-clip: padding-box;
+
+  /* Glass reflection shine */
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 30%;
+    height: 200%;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent
+    );
+    transform: rotate(30deg);
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &:hover::after {
+    transform: translate(450%, 0) rotate(30deg);
+  }
+}
+
+@utility glass-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(235, 74, 66, 0.35);
+    box-shadow: 0 12px 40px 0 rgba(235, 74, 66, 0.08), inset 0 0 12px rgba(255, 255, 255, 0.02);
+  }
+}
+
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+@utility glass-nav {
+  background: rgba(8, 8, 8, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+@utility bg-noise {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 24px 24px;
+  opacity: 0.04;
+}
+
 /* Custom CSS overrides */
 html {
   scroll-behavior: smooth;
-  background-color: #0f0f0f;
+  background-color: #080808;
   color: #fdf3f2;
 }
 
@@ -44,7 +107,7 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f0f0f;
+  background: #080808;
 }
 ::-webkit-scrollbar-thumb {
   background: #eb4a42;
@@ -57,5 +120,22 @@ body {
 /* Selection Highlight Accent */
 ::selection {
   background-color: #eb4a42;
-  color: #0f0f0f;
+  color: #080808;
 }
+
+/* Subtle pulse glow */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.05);
+  }
+}
+
+.ambient-glow-pulse {
+  animation: glow-pulse 10s ease-in-out infinite alternate;
+}
+

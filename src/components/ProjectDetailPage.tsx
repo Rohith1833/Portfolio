@@ -75,10 +75,19 @@ export const ProjectDetailPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={shouldReduceMotion ? {} : { opacity: 0, y: -24 }}
       transition={transitionEntrance}
-      className="min-h-screen bg-near-black text-fdf3f2 py-24 px-6 relative overflow-x-hidden font-sans selection:bg-primary-red selection:text-near-black"
+      className="min-h-screen bg-[#080808] text-fdf3f2 py-24 px-6 relative overflow-x-hidden font-sans selection:bg-primary-red selection:text-near-black"
     >
+      {/* Ambient background noise overlay */}
+      <div className="absolute inset-0 bg-noise pointer-events-none z-0" />
+
+      {/* Ambient glow orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[15%] left-[5%] w-[45vw] h-[45vw] rounded-full bg-primary-red/3 blur-[120px] ambient-glow-pulse" />
+        <div className="absolute bottom-[15%] right-[5%] w-[45vw] h-[45vw] rounded-full bg-primary-red/3 blur-[120px] ambient-glow-pulse" style={{ animationDelay: '-4s' }} />
+      </div>
+
       {/* Background Subtle gridlines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0" />
 
       <div className="max-w-6xl mx-auto relative z-40">
 
@@ -93,24 +102,24 @@ export const ProjectDetailPage: React.FC = () => {
           </Link>
         </div>
 
-        {/* Outer hexagon container wrapper */}
+        {/* Outer hexagon container wrapper (Simulating a premium gradient border) */}
         <div
-          className="bg-border-strong p-[1px]"
+          className="bg-gradient-to-b from-white/15 via-white/5 to-white/10 p-[1.2px] shadow-2xl"
           style={clipPathStyle}
         >
           <div
-            className="bg-near-black p-6 md:p-16 relative"
+            className="bg-[#0f0f0f]/80 backdrop-blur-xl p-6 md:p-16 relative"
             style={clipPathStyle}
           >
             {/* Header section inside hexagon */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border-subtle pb-6 mb-8 mt-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6 mb-8 mt-4">
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2">
                     {project.title}
                   </h1>
                   <span
-                    className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-none border ${project.badge === 'Live'
+                    className={`font-mono text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${project.badge === 'Live'
                         ? 'border-green-500/30 text-green-400 bg-green-500/5'
                         : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5'
                       }`}
@@ -132,9 +141,9 @@ export const ProjectDetailPage: React.FC = () => {
                     href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.015 }}
+                    whileHover={{ y: -2 }}
                     transition={springHover}
-                    className="bg-primary-red text-near-black px-5 py-3 rounded-none font-bold transition-colors flex items-center gap-1.5 outline-none select-none"
+                    className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold transition-all flex items-center gap-1.5 outline-none select-none shadow-[0_4px_15px_rgba(235,74,66,0.25)]"
                   >
                     Live Demo
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -145,9 +154,9 @@ export const ProjectDetailPage: React.FC = () => {
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.015 }}
+                    whileHover={{ y: -2 }}
                     transition={springHover}
-                    className="border border-border-strong hover:border-primary-red hover:bg-primary-red/5 text-fdf3f2 px-5 py-3 rounded-none transition-colors flex items-center gap-1.5 outline-none select-none"
+                    className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-1.5 outline-none select-none"
                   >
                     <GithubIcon className="text-primary-red" />
                     Codebase
@@ -157,10 +166,10 @@ export const ProjectDetailPage: React.FC = () => {
             </div>
 
             {/* Screenshots Placeholder */}
-            <div className="mb-8 p-1 border border-border-subtle bg-dark-grey/10 max-w-4xl mx-auto">
+            <div className="mb-8 p-1 glass-card rounded-2xl max-w-4xl mx-auto shadow-xl">
               <PlaceholderBox
                 text={`Add ${project.title} dashboard screenshot`}
-                className="h-64 md:h-80 w-full rounded-none"
+                className="h-64 md:h-80 w-full rounded-xl"
               />
             </div>
 
@@ -174,7 +183,7 @@ export const ProjectDetailPage: React.FC = () => {
 
             {/* Interactive Features List */}
             {isPwa && project.features && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-t border-border-subtle pt-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-t border-white/10 pt-8">
                 {/* Live Features */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
@@ -227,7 +236,7 @@ export const ProjectDetailPage: React.FC = () => {
 
             {/* General listFeatures (non-PWA) */}
             {!isPwa && project.listFeatures && (
-              <div className="mb-8 border-t border-border-subtle pt-8">
+              <div className="mb-8 border-t border-white/10 pt-8">
                 <h3 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4">Key Capabilities</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {project.listFeatures.map((feat, idx) => (
@@ -242,7 +251,7 @@ export const ProjectDetailPage: React.FC = () => {
 
             {/* Technical Hurdles Solved (Challenges) */}
             {project.challenges && (
-              <div className="border-t border-border-subtle pt-8 mb-8">
+              <div className="border-t border-white/10 pt-8 mb-8">
                 <div className="flex items-center gap-2 mb-4 text-primary-red">
                   <AlertTriangle className="w-4 h-4" />
                   <h3 className="font-mono text-xs uppercase tracking-widest font-bold">Technical Hurdles Solved</h3>
@@ -259,13 +268,13 @@ export const ProjectDetailPage: React.FC = () => {
             )}
 
             {/* Tech Stack Badges */}
-            <div className="border-t border-border-subtle pt-6 mb-4">
+            <div className="border-t border-white/10 pt-6 mb-4">
               <h3 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-3">Technologies Leveraged</h3>
               <div className="flex flex-wrap gap-1.5">
                 {project.techStack.map((tech) => (
                   <span
                     key={tech}
-                    className="font-mono text-[10px] text-fdf3f2/70 bg-dark-grey border border-border-subtle px-2.5 py-1 rounded-none"
+                    className="font-mono text-[10px] text-fdf3f2/70 bg-white/5 border border-white/5 px-2.5 py-1 rounded-full"
                   >
                     {tech}
                   </span>
@@ -275,7 +284,7 @@ export const ProjectDetailPage: React.FC = () => {
 
             {/* Case Study Section (Rendered exclusively for Health Tracker PWA) */}
             {isPwa && (
-              <div className="border-t border-border-subtle pt-8 mt-8 flex flex-col gap-6">
+              <div className="border-t border-white/10 pt-8 mt-8 flex flex-col gap-6">
                 <div>
                   <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">03 / CASE STUDY</span>
                   <h3 className="text-xl font-bold text-fdf3f2 mt-2">Health Tracker PWA Architecture</h3>
@@ -298,7 +307,7 @@ export const ProjectDetailPage: React.FC = () => {
 
                   <div>
                     <h4 className="font-mono text-xs uppercase tracking-wider text-primary-red font-bold mb-1">A Hard Part</h4>
-                    <div className="border border-dashed border-primary-red/30 bg-primary-red/5 p-4 rounded-none">
+                    <div className="border border-dashed border-primary-red/30 bg-primary-red/5 p-5 rounded-2xl backdrop-blur-md">
                       <p className="text-xs font-mono text-muted-grey">
                         Implementing reliable offline caching for the home exercise library while keeping Supabase Auth session state intact across PWA reloads required careful coordination between the service worker and React Router's protected route logic.
                       </p>
@@ -311,13 +320,13 @@ export const ProjectDetailPage: React.FC = () => {
                       Here is where the product development cycle stands right now:
                     </p>
                     <div className="flex flex-wrap gap-2 text-xs font-mono">
-                      <span className="border border-green-500/30 text-green-400 bg-green-500/5 px-2 py-1.5 rounded-none">
+                      <span className="border border-green-500/30 text-green-400 bg-green-500/5 px-2.5 py-1.5 rounded-full">
                         LIVE: Auth, Exercise Library, BMI, Intake Tracks
                       </span>
-                      <span className="border border-yellow-500/30 text-yellow-400 bg-yellow-500/5 px-2 py-1.5 rounded-none">
+                      <span className="border border-yellow-500/30 text-yellow-400 bg-yellow-500/5 px-2.5 py-1.5 rounded-full">
                         IN PROGRESS: Weight Dashboard, Recharts Analytics
                       </span>
-                      <span className="border border-primary-red/30 text-primary-red bg-primary-red/5 px-2 py-1.5 rounded-none">
+                      <span className="border border-primary-red/30 text-primary-red bg-primary-red/5 px-2.5 py-1.5 rounded-full">
                         PLANNED: Routine Planner, Workout Goal Profiles
                       </span>
                     </div>

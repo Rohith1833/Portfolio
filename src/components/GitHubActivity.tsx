@@ -79,8 +79,11 @@ export const GitHubActivity: React.FC = () => {
   };
 
   return (
-    <div className="border border-border-subtle bg-dark-grey/10 rounded-none p-6">
-      <div className="flex items-center justify-between border-b border-border-subtle pb-4 mb-6">
+    <div className="glass-card p-6 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+      {/* Subtle interior glow spot */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(235,74,66,0.02)_0%,transparent_50%)] pointer-events-none" />
+
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6 relative z-10">
         <div className="flex items-center gap-2">
           <GithubIcon className="text-primary-red" />
           <h4 className="text-base font-bold text-fdf3f2">
@@ -98,23 +101,23 @@ export const GitHubActivity: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="border border-border-subtle bg-dark-grey/30 rounded-none p-4 h-36 flex flex-col justify-between animate-pulse"
+              className="glass-card rounded-2xl p-4 h-36 flex flex-col justify-between animate-pulse"
             >
               <div>
-                <div className="h-4 bg-border-strong rounded-none w-3/4 mb-3" />
-                <div className="h-3 bg-border-subtle rounded-none w-5/6 mb-1" />
-                <div className="h-3 bg-border-subtle rounded-none w-2/3" />
+                <div className="h-4 bg-white/10 rounded-full w-3/4 mb-3" />
+                <div className="h-3 bg-white/5 rounded-full w-5/6 mb-1" />
+                <div className="h-3 bg-white/5 rounded-full w-2/3" />
               </div>
-              <div className="h-3 bg-border-subtle rounded-none w-1/4" />
+              <div className="h-3 bg-white/5 rounded-full w-1/4" />
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="text-center py-6">
+        <div className="text-center py-6 relative z-10">
           <BookOpen className="w-6 h-6 text-muted-grey mx-auto mb-3 opacity-40" />
           <p className="font-mono text-xs text-muted-grey">
             Unable to load real-time repositories. Direct profile at:{' '}
@@ -129,18 +132,18 @@ export const GitHubActivity: React.FC = () => {
           </p>
         </div>
       ) : repos.length === 0 ? (
-        <div className="text-center py-6 text-muted-grey font-mono text-xs">
+        <div className="text-center py-6 text-muted-grey font-mono text-xs relative z-10">
           No public repositories found.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
           {repos.slice(0, 3).map((repo) => (
             <a
               key={repo.name}
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group border border-border-subtle hover:border-primary-red/30 bg-dark-grey/20 hover:bg-dark-grey/40 rounded-none p-4 transition-all duration-200 flex flex-col justify-between"
+              className="group glass-card glass-card-hover p-4 rounded-xl flex flex-col justify-between transition-all duration-300"
             >
               <div>
                 <h5 className="font-bold text-fdf3f2 group-hover:text-primary-red transition-colors text-sm truncate mb-2">
@@ -151,7 +154,7 @@ export const GitHubActivity: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between border-t border-border-subtle/50 pt-3 text-[10px] text-muted-grey">
+              <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] text-muted-grey">
                 {repo.language ? (
                   <div className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${getLanguageColor(repo.language)}`} />

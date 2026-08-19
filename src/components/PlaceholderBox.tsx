@@ -14,7 +14,7 @@ export const PlaceholderBox: React.FC<PlaceholderBoxProps> = ({
 }) => {
   return (
     <div
-      className={`border-2 border-dashed border-border-strong bg-dark-grey/50 rounded-md flex flex-col items-center justify-center p-6 text-center select-none ${className}`}
+      className={`border border-dashed border-white/10 bg-white/5 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none ${className}`}
     >
       <HelpCircle className={`${iconClassName} mb-3 animate-pulse`} />
       <span className="font-mono text-xs tracking-wider text-muted-grey uppercase">
