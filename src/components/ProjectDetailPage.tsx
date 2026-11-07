@@ -1,16 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowLeft,
   CheckCircle2,
-  RefreshCw,
-  Calendar,
   AlertTriangle,
-  ExternalLink
+  ExternalLink,
+  ShieldAlert,
+  Cpu,
+  Layers,
+  Sparkles,
+  Database,
+  ArrowUpRight,
+  Info
 } from 'lucide-react';
-import { PORTFOLIO_CONFIG } from '../portfolioConfig';
+import { PORTFOLIO_CONFIG, getProjectSlug } from '../portfolioConfig';
+import type { Project, ChallengeDetail } from '../portfolioConfig';
 import { PlaceholderBox } from './PlaceholderBox';
+import { WebCorner } from './WebCorner';
+import { WorkflowDiagram } from './case-studies/WorkflowDiagram';
+import { HumanIntentVisuals } from './case-studies/HumanIntentVisuals';
+import { FoodDeliveryVisuals } from './case-studies/FoodDeliveryVisuals';
+import { LocalLensVisuals } from './case-studies/LocalLensVisuals';
 
 const GithubIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg
@@ -27,12 +38,7 @@ const GithubIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   </svg>
 );
 
-export const getProjectSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
-};
+
 
 const transitionEntrance = { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const };
 const springHover = { type: 'spring' as const, stiffness: 300, damping: 30 };
@@ -40,33 +46,56 @@ const springHover = { type: 'spring' as const, stiffness: 300, damping: 30 };
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const shouldReduceMotion = useReducedMotion();
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
 
-  // Find the project based on the slug
-  const project = PORTFOLIO_CONFIG.featuredProjects.find(
+  // Search in both featuredProjects and academicProjects
+  const allProjects: Project[] = [
+    ...PORTFOLIO_CONFIG.featuredProjects,
+    ...PORTFOLIO_CONFIG.academicProjects
+  ];
+
+  const project = allProjects.find(
     (p) => getProjectSlug(p.title) === id
   );
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+  }, [id]);
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-near-black text-fdf3f2 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-[#080808] text-fdf3f2 flex flex-col items-center justify-center p-6 selection:bg-primary-red selection:text-near-black">
         <h2 className="text-xl font-bold text-primary-red mb-4 uppercase tracking-widest font-mono">Project Not Found</h2>
-        <p className="text-sm text-muted-grey mb-6">The requested project details page could not be located.</p>
-        <Link to="/" className="border border-border-strong text-fdf3f2 px-6 py-4 rounded-none font-mono text-xs uppercase tracking-wider hover:border-primary-red hover:bg-primary-red/5 transition-all">
-          Back to Portfolio
+        <p className="text-sm text-muted-grey mb-6">The requested case study could not be located in the project registry.</p>
+        <Link
+          to="/#projects"
+          className="border border-white/20 text-fdf3f2 px-6 py-3 rounded-full font-mono text-xs uppercase tracking-wider hover:border-primary-red hover:bg-primary-red/10 transition-all"
+        >
+          Return to Portfolio Projects
         </Link>
       </div>
     );
   }
 
-  const isPwa = project.title.includes('Health Tracker');
+  const slug = getProjectSlug(project.title);
+  const isHumanIntent = slug === 'humanintent';
+  const isFoodDelivery = slug === 'food-delivery-time-predictor';
+  const isLocalLens = slug === 'locallens';
 
-  const clipPathStyle = {
-    clipPath: 'polygon(0% 50%, 3% 0%, 97% 0%, 100% 50%, 97% 100%, 3% 100%)',
-    WebkitClipPath: 'polygon(0% 50%, 3% 0%, 97% 0%, 100% 50%, 97% 100%, 3% 100%)'
+  const handleLinkNotice = (type: 'demo' | 'github') => {
+    if (type === 'demo') {
+      if (isHumanIntent) {
+        setModalMessage("HumanIntent runs local inference on Ollama & Llama 3 via an NVIDIA RTX 3050 Laptop GPU. There is no commercial cloud URL, ensuring zero data egress.");
+      } else if (isFoodDelivery) {
+        setModalMessage("Food Delivery Predictor is designed as a local Streamlit application. Live deployment on a public host is pending containerized cloud deployment.");
+      } else if (isLocalLens) {
+        setModalMessage("LocalLens runs locally using Streamlit and SQLite for rapid review intelligence. Online hosting will be provided once deployed.");
+      } else {
+        setModalMessage("This project is currently running in local development mode.");
+      }
+    } else {
+      setModalMessage(`The source repository for ${project.title} is hosted on GitHub under Rohith1833.`);
+    }
   };
 
   return (
@@ -75,271 +104,506 @@ export const ProjectDetailPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={shouldReduceMotion ? {} : { opacity: 0, y: -24 }}
       transition={transitionEntrance}
-      className="min-h-screen bg-[#080808] text-fdf3f2 py-24 px-6 relative overflow-x-hidden font-sans selection:bg-primary-red selection:text-near-black"
+      className="min-h-screen bg-[#080808] text-fdf3f2 py-20 px-4 sm:px-6 relative overflow-x-hidden font-sans selection:bg-primary-red selection:text-near-black"
     >
       {/* Ambient background noise overlay */}
       <div className="absolute inset-0 bg-noise pointer-events-none z-0" />
 
       {/* Ambient glow orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[15%] left-[5%] w-[45vw] h-[45vw] rounded-full bg-primary-red/3 blur-[120px] ambient-glow-pulse" />
-        <div className="absolute bottom-[15%] right-[5%] w-[45vw] h-[45vw] rounded-full bg-primary-red/3 blur-[120px] ambient-glow-pulse" style={{ animationDelay: '-4s' }} />
+        <div className="absolute top-[10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-red/4 blur-[140px] ambient-glow-pulse" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-red/3 blur-[140px] ambient-glow-pulse" style={{ animationDelay: '-4s' }} />
       </div>
 
-      {/* Background Subtle gridlines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0" />
+      {/* Web Corner Motifs */}
+      <WebCorner position="top-left" />
+      <WebCorner position="bottom-right" />
 
-      <div className="max-w-6xl mx-auto relative z-40">
+      {/* Modal / Toast Notice */}
+      {modalMessage && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-card max-w-md w-full p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-primary-red font-mono text-xs uppercase tracking-wider font-bold">
+              <Info className="w-4 h-4" />
+              <span>Deployment & Repository Notice</span>
+            </div>
+            <p className="text-sm text-muted-grey leading-relaxed">
+              {modalMessage}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setModalMessage(null)}
+                className="bg-primary-red text-near-black font-mono text-xs uppercase px-5 py-2 rounded-full font-bold cursor-pointer"
+              >
+                Close Notice
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-        {/* Back Link */}
-        <div className="mb-8">
+      <div className="max-w-5xl mx-auto relative z-20 flex flex-col gap-12">
+        {/* Navigation Bar */}
+        <div className="flex items-center justify-between">
           <Link
             to="/#projects"
-            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-grey hover:text-primary-red transition-colors group select-none"
+            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-grey hover:text-primary-red transition-colors group select-none bg-white/5 border border-white/10 px-4 py-2 rounded-full"
           >
-            <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
-            Back to Projects
+            <ArrowLeft className="w-3.5 h-3.5 transform group-hover:-translate-x-1 transition-transform" />
+            Back to Projects Portfolio
           </Link>
+
+          <span className="font-mono text-[10px] text-muted-grey uppercase tracking-widest hidden sm:inline">
+            SYSTEM://CASE_STUDY_V2
+          </span>
         </div>
 
-        {/* Outer hexagon container wrapper (Simulating a premium gradient border) */}
-        <div
-          className="bg-gradient-to-b from-white/15 via-white/5 to-white/10 p-[1.2px] shadow-2xl"
-          style={clipPathStyle}
-        >
-          <div
-            className="bg-[#0f0f0f]/80 backdrop-blur-xl p-6 md:p-16 relative"
-            style={clipPathStyle}
-          >
-            {/* Header section inside hexagon */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6 mb-8 mt-4">
+        {/* 1. PROJECT HERO SECTION */}
+        <header className="glass-card p-8 md:p-12 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl">
+          <div className="flex flex-col gap-6">
+            {/* Badges & Category */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-primary-red/40 text-primary-red bg-primary-red/10 font-bold">
+                {project.category || "Engineering Project"}
+              </span>
+
+              {project.badge && (
+                <span
+                  className={`font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border ${
+                    project.badge === 'Featured'
+                      ? 'border-primary-red text-fdf3f2 bg-primary-red/20 font-bold'
+                      : project.badge === 'Live'
+                      ? 'border-green-500/40 text-green-400 bg-green-500/10'
+                      : 'border-yellow-500/40 text-yellow-400 bg-yellow-500/10'
+                  }`}
+                >
+                  {project.badge}
+                </span>
+              )}
+
+              {project.isFlagship && (
+                <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-primary-red/50 text-fdf3f2 bg-primary-red font-bold flex items-center gap-1.5 shadow-[0_0_15px_rgba(235,74,66,0.3)]">
+                  <Sparkles className="w-3 h-3 text-near-black fill-near-black" />
+                  Primary Featured Project
+                </span>
+              )}
+            </div>
+
+            {/* Title & Subtitle */}
+            <div>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-fdf3f2 leading-tight">
+                {project.title}
+              </h1>
+              {project.subtitle && (
+                <p className="text-base sm:text-xl text-primary-red/90 mt-2 font-medium">
+                  {project.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* Role & Context Meta */}
+            {project.role && (
+              <div className="font-mono text-xs text-muted-grey flex items-center gap-2 border-t border-white/5 pt-4">
+                <span className="text-primary-red font-bold uppercase tracking-wider">Engineering Role:</span>
+                <span className="text-fdf3f2">{project.role}</span>
+              </div>
+            )}
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-2 font-mono text-xs uppercase tracking-wider">
+              {project.demoUrl ? (
+                <motion.a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -2 }}
+                  transition={springHover}
+                  className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 shadow-[0_4px_15px_rgba(235,74,66,0.25)]"
+                >
+                  <span>Launch Live Demo</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </motion.a>
+              ) : (
+                <motion.button
+                  onClick={() => handleLinkNotice('demo')}
+                  whileHover={{ y: -2 }}
+                  transition={springHover}
+                  className="bg-white/10 hover:bg-white/15 text-fdf3f2 px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                >
+                  <span>{isHumanIntent ? 'Local Ollama Runtime' : 'Streamlit Local Engine'}</span>
+                  <Info className="w-3.5 h-3.5 text-primary-red" />
+                </motion.button>
+              )}
+
+              {project.githubUrl ? (
+                <motion.a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -2 }}
+                  transition={springHover}
+                  className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2"
+                >
+                  <GithubIcon className="text-primary-red" />
+                  <span>GitHub Repository</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-grey" />
+                </motion.a>
+              ) : (
+                <motion.button
+                  onClick={() => handleLinkNotice('github')}
+                  whileHover={{ y: -2 }}
+                  transition={springHover}
+                  className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2 cursor-pointer"
+                >
+                  <GithubIcon className="text-primary-red" />
+                  <span>GitHub: Rohith1833</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-grey" />
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* 2. PROJECT OVERVIEW */}
+        <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-4">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-red" />
+            <span>01 / Project Overview</span>
+          </div>
+          <p className="text-base text-fdf3f2/90 leading-relaxed">
+            {project.overview || project.description}
+          </p>
+          {project.datasetInfo && (
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl font-mono text-xs text-muted-grey flex items-start gap-2 mt-2">
+              <Database className="w-4 h-4 text-primary-red shrink-0 mt-0.5" />
               <div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2">
-                    {project.title}
-                  </h1>
-                  <span
-                    className={`font-mono text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${project.badge === 'Live'
-                        ? 'border-green-500/30 text-green-400 bg-green-500/5'
-                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5'
-                      }`}
-                  >
-                    {project.badge}
-                  </span>
-                </div>
-                {project.role && (
-                  <p className="font-mono text-xs uppercase tracking-wider text-primary-red mt-2 font-bold">
-                    Role: {project.role}
-                  </p>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 font-mono text-xs uppercase tracking-wider">
-                {project.demoUrl && (
-                  <motion.a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ y: -2 }}
-                    transition={springHover}
-                    className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold transition-all flex items-center gap-1.5 outline-none select-none shadow-[0_4px_15px_rgba(235,74,66,0.25)]"
-                  >
-                    Live Demo
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </motion.a>
-                )}
-                {project.githubUrl && (
-                  <motion.a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ y: -2 }}
-                    transition={springHover}
-                    className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-1.5 outline-none select-none"
-                  >
-                    <GithubIcon className="text-primary-red" />
-                    Codebase
-                  </motion.a>
-                )}
+                <strong className="text-fdf3f2 block">Benchmark Dataset:</strong>
+                {project.datasetInfo}
               </div>
             </div>
+          )}
+        </section>
 
-            {/* Screenshots Placeholder */}
-            <div className="mb-8 p-1 glass-card rounded-2xl max-w-4xl mx-auto shadow-xl">
-              <PlaceholderBox
-                text={`Add ${project.title} dashboard screenshot`}
-                className="h-64 md:h-80 w-full rounded-xl"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="mb-8">
-              <h3 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-3">Project Narrative</h3>
-              <p className="text-base text-muted-grey leading-relaxed">
-                {project.description}
+        {/* 3 & 4. PROBLEM STATEMENT & SOLUTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Problem Statement */}
+          <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-3">
+                <ShieldAlert className="w-4 h-4" />
+                <span>02 / Problem Statement</span>
+              </div>
+              <p className="text-sm text-muted-grey leading-relaxed">
+                {project.problemStatement || "Addressing critical operational bottlenecks, unstructured input fragility, and inconsistent outputs through deterministic software engineering."}
               </p>
             </div>
+            <div className="pt-4 border-t border-white/5 font-mono text-[10px] text-primary-red/80">
+              [IDENTIFIED FRICTION POINT]
+            </div>
+          </section>
 
-            {/* Interactive Features List */}
-            {isPwa && project.features && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-t border-white/10 pt-8">
-                {/* Live Features */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-green-400 font-bold">Live Features</span>
-                  </div>
-                  <ul className="space-y-2">
-                    {project.features.live.map((feat, idx) => (
-                      <li key={idx} className="text-xs text-muted-grey flex items-start gap-1">
-                        <span className="text-green-500/70 select-none mr-1.5">•</span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* In Progress Features */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <RefreshCw className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-yellow-400 font-bold">In Progress</span>
-                  </div>
-                  <ul className="space-y-2">
-                    {project.features.inProgress.map((feat, idx) => (
-                      <li key={idx} className="text-xs text-muted-grey flex items-start gap-1">
-                        <span className="text-yellow-500/70 select-none mr-1.5">•</span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Planned Features */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="w-4 h-4 text-primary-red/70" />
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-primary-red/70 font-bold">Planned Roadmap</span>
-                  </div>
-                  <ul className="space-y-2">
-                    {project.features.planned.map((feat, idx) => (
-                      <li key={idx} className="text-xs text-muted-grey/70 flex items-start gap-1">
-                        <span className="text-primary-red/50 select-none mr-1.5">•</span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+          {/* Solution */}
+          <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-green-400 font-bold mb-3">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>03 / Engineered Solution</span>
               </div>
-            )}
+              <p className="text-sm text-muted-grey leading-relaxed">
+                {project.solutionStatement || "Developed a unified, reproducible system that blends deterministic logic with intelligent processing to guarantee reliability and zero data loss."}
+              </p>
+            </div>
+            <div className="pt-4 border-t border-white/5 font-mono text-[10px] text-green-400/80">
+              [DELIVERED CAPABILITY]
+            </div>
+          </section>
+        </div>
 
-            {/* General listFeatures (non-PWA) */}
-            {!isPwa && project.listFeatures && (
-              <div className="mb-8 border-t border-white/10 pt-8">
-                <h3 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4">Key Capabilities</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.listFeatures.map((feat, idx) => (
-                    <div key={idx} className="text-xs text-muted-grey flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary-red mt-0.5 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
+        {/* 5. KEY FEATURES */}
+        <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+              <Sparkles className="w-4 h-4" />
+              <span>04 / Core Features & Capabilities</span>
+            </div>
+            <span className="font-mono text-[10px] text-muted-grey">Production Specifications</span>
+          </div>
+
+          {/* Render live features or listFeatures */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(project.features?.live || project.listFeatures || []).map((feat, idx) => (
+              <div
+                key={idx}
+                className="bg-black/40 border border-white/5 p-4 rounded-xl flex items-start gap-3 hover:border-primary-red/30 transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4 text-primary-red shrink-0 mt-0.5" />
+                <span className="text-xs text-muted-grey leading-relaxed">
+                  {feat}
+                </span>
               </div>
-            )}
+            ))}
+          </div>
 
-            {/* Technical Hurdles Solved (Challenges) */}
+          {project.features?.inProgress && project.features.inProgress.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/5">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-yellow-400 font-bold block mb-3">
+                In-Progress Roadmap Features
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {project.features.inProgress.map((item, idx) => (
+                  <div key={idx} className="text-xs text-muted-grey flex items-center gap-2 bg-yellow-500/5 border border-yellow-500/10 p-3 rounded-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* 6. TECHNOLOGY STACK */}
+        <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-4">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+            <Cpu className="w-4 h-4" />
+            <span>05 / Technology Stack & Components</span>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {project.techStack.map((tech) => (
+              <span
+                key={tech}
+                className="font-mono text-xs text-fdf3f2 bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-full hover:border-primary-red/50 hover:bg-primary-red/10 transition-colors"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* 7. SYSTEM ARCHITECTURE OR WORKFLOW */}
+        {project.workflow && project.workflow.length > 0 && (
+          <section className="flex flex-col gap-4">
+            <WorkflowDiagram
+              steps={project.workflow}
+              title={`06 / System Architecture & Execution Flow (${project.title})`}
+            />
+          </section>
+        )}
+
+        {/* 8. ENGINEERING HIGHLIGHTS & CHALLENGES */}
+        {(project.engineeringHighlights || project.challenges) && (
+          <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+                <AlertTriangle className="w-4 h-4" />
+                <span>07 / Engineering Challenges & Solutions</span>
+              </div>
+              <span className="font-mono text-[10px] text-muted-grey">Technical Problem Solving</span>
+            </div>
+
+            {/* Challenges list */}
             {project.challenges && (
-              <div className="border-t border-white/10 pt-8 mb-8">
-                <div className="flex items-center gap-2 mb-4 text-primary-red">
-                  <AlertTriangle className="w-4 h-4" />
-                  <h3 className="font-mono text-xs uppercase tracking-widest font-bold">Technical Hurdles Solved</h3>
-                </div>
-                <ul className="space-y-3">
-                  {project.challenges.map((challenge, idx) => (
+              <div className="grid grid-cols-1 gap-4">
+                {project.challenges.map((c, idx) => {
+                  if (typeof c === 'string') {
+                    return (
+                      <div key={idx} className="bg-black/50 border border-white/5 p-4 rounded-xl flex items-start gap-3">
+                        <span className="font-mono text-primary-red font-bold text-xs">{idx + 1}.</span>
+                        <p className="text-xs text-muted-grey leading-relaxed">{c}</p>
+                      </div>
+                    );
+                  }
+                  const challengeObj = c as ChallengeDetail;
+                  return (
+                    <div key={idx} className="bg-black/50 border border-white/5 p-5 rounded-2xl flex flex-col gap-2">
+                      <div className="flex items-center gap-2 font-mono text-xs font-bold text-fdf3f2">
+                        <span className="text-primary-red">HURDLE {idx + 1}:</span>
+                        <span>{challengeObj.problem}</span>
+                      </div>
+                      <div className="border-t border-white/5 pt-2 text-xs text-muted-grey leading-relaxed flex items-start gap-2">
+                        <span className="text-green-400 font-mono font-bold">SOLUTION:</span>
+                        <span>{challengeObj.solution}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Engineering Highlights */}
+            {project.engineeringHighlights && (
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <span className="font-mono text-xs uppercase tracking-wider text-muted-grey/60 font-bold block mb-4">
+                  Engineering System Highlights
+                </span>
+                <ul className="space-y-2.5">
+                  {project.engineeringHighlights.map((hl, idx) => (
                     <li key={idx} className="text-xs text-muted-grey flex items-start gap-2">
-                      <span className="font-mono text-primary-red font-bold select-none">{idx + 1}.</span>
-                      <span>{challenge}</span>
+                      <span className="text-primary-red select-none font-mono">▸</span>
+                      <span>{hl}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
+          </section>
+        )}
 
-            {/* Tech Stack Badges */}
-            <div className="border-t border-white/10 pt-6 mb-4">
-              <h3 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-3">Technologies Leveraged</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {project.techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="font-mono text-[10px] text-fdf3f2/70 bg-white/5 border border-white/5 px-2.5 py-1 rounded-full"
-                  >
-                    {tech}
-                  </span>
-                ))}
+        {/* 9. RESULTS & EVALUATION */}
+        {project.resultsAndEvaluation && project.resultsAndEvaluation.length > 0 && (
+          <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <span>08 / Results & Empirical Evaluation</span>
               </div>
+              <span className="font-mono text-[10px] text-muted-grey">Reported Test Metrics</span>
             </div>
 
-            {/* Case Study Section (Rendered exclusively for Health Tracker PWA) */}
-            {isPwa && (
-              <div className="border-t border-white/10 pt-8 mt-8 flex flex-col gap-6">
-                <div>
-                  <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">03 / CASE STUDY</span>
-                  <h3 className="text-xl font-bold text-fdf3f2 mt-2">Health Tracker PWA Architecture</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+              {project.resultsAndEvaluation.map((item, idx) => (
+                <div key={idx} className="bg-black/60 border border-white/5 p-5 rounded-2xl flex flex-col justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-grey">
+                    {item.metric}
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-bold font-mono text-fdf3f2 my-2">
+                    {item.value}
+                  </div>
+                  {item.note && (
+                    <span className="text-[11px] text-muted-grey leading-tight">
+                      {item.note}
+                    </span>
+                  )}
                 </div>
+              ))}
+            </div>
 
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider text-fdf3f2/60 font-bold mb-1">Problem</h4>
-                    <p className="text-sm text-muted-grey leading-relaxed">
-                      Tracking personal home-workouts effectively without having to rely on heavy, gym-centric mobile apps can be a challenge. Most available solutions are tailored heavily towards commercial gym machinery, requiring constant internet synchronization and bloated features. This application was built to fill that gap—creating a light, focused workout logging system optimized for offline-ready home exercises and routines.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider text-fdf3f2/60 font-bold mb-1">Approach</h4>
-                    <p className="text-sm text-muted-grey leading-relaxed">
-                      The core architecture utilizes PostgreSQL and Prisma ORM rather than raw SQL to ensure type-safe database queries, schema reliability, and quick development migrations. Supabase Auth paired with Google OAuth coordinates user login states, enabling secure, credential-free onboarding. Choosing a Progressive Web App (PWA) configuration allows the app to load instantly from home screens, cache exercise libraries locally, and offer a fast, offline-resilient experience akin to native apps.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider text-primary-red font-bold mb-1">A Hard Part</h4>
-                    <div className="border border-dashed border-primary-red/30 bg-primary-red/5 p-5 rounded-2xl backdrop-blur-md">
-                      <p className="text-xs font-mono text-muted-grey">
-                        Implementing reliable offline caching for the home exercise library while keeping Supabase Auth session state intact across PWA reloads required careful coordination between the service worker and React Router's protected route logic.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-mono text-xs uppercase tracking-wider text-fdf3f2/60 font-bold mb-2">Current State</h4>
-                    <p className="text-sm text-muted-grey leading-relaxed mb-3">
-                      Here is where the product development cycle stands right now:
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-xs font-mono">
-                      <span className="border border-green-500/30 text-green-400 bg-green-500/5 px-2.5 py-1.5 rounded-full">
-                        LIVE: Auth, Exercise Library, BMI, Intake Tracks
-                      </span>
-                      <span className="border border-yellow-500/30 text-yellow-400 bg-yellow-500/5 px-2.5 py-1.5 rounded-full">
-                        IN PROGRESS: Weight Dashboard, Recharts Analytics
-                      </span>
-                      <span className="border border-primary-red/30 text-primary-red bg-primary-red/5 px-2.5 py-1.5 rounded-full">
-                        PLANNED: Routine Planner, Workout Goal Profiles
-                      </span>
-                    </div>
-                  </div>
-                </div>
+            {project.hardwareSpecs && (
+              <div className="bg-white/2 border border-white/5 p-4 rounded-xl font-mono text-xs text-muted-grey flex items-center justify-between">
+                <span>Hardware Environment:</span>
+                <span className="text-fdf3f2 font-bold">{project.hardwareSpecs}</span>
               </div>
             )}
 
+            {/* Evaluation & Accuracy Notes */}
+            {project.evaluationNotes && (
+              <div className="border border-white/10 bg-white/5 p-4 rounded-2xl flex flex-col gap-2 font-mono text-xs text-muted-grey">
+                <span className="text-primary-red font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Info className="w-3.5 h-3.5" />
+                  Accuracy & Verification Disclosures
+                </span>
+                <ul className="space-y-1">
+                  {project.evaluationNotes.map((note, idx) => (
+                    <li key={idx} className="text-[11px] leading-relaxed">
+                      • {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* 10. SCREENSHOTS & VISUAL DEMONSTRATIONS */}
+        <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-6">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+              <Layers className="w-4 h-4" />
+              <span>09 / Technical Visualizations & Interactive Previews</span>
+            </div>
+            <span className="font-mono text-[10px] text-muted-grey">System Simulation</span>
           </div>
-        </div>
+
+          {/* Render custom interactive visuals depending on project */}
+          {isHumanIntent && <HumanIntentVisuals />}
+          {isFoodDelivery && <FoodDeliveryVisuals />}
+          {isLocalLens && <LocalLensVisuals />}
+
+          {/* Fallback for other projects */}
+          {!isHumanIntent && !isFoodDelivery && !isLocalLens && (
+            <div className="flex flex-col gap-4">
+              <PlaceholderBox
+                text={`Verified System Preview for ${project.title}`}
+                className="h-64 rounded-2xl w-full"
+              />
+              <p className="text-xs text-muted-grey font-mono text-center">
+                Visual placeholder configured for future asset drop. No fabricated screenshots applied.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* 11. LIMITATIONS & FUTURE IMPROVEMENTS */}
+        {project.limitationsAndFuture && project.limitationsAndFuture.length > 0 && (
+          <section className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col gap-4">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-primary-red font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary-red" />
+              <span>10 / Limitations & Engineering Roadmap</span>
+            </div>
+            <p className="text-xs text-muted-grey">
+              Honest technical appraisal of current system boundaries and targeted architectural improvements:
+            </p>
+            <div className="space-y-2 mt-2">
+              {project.limitationsAndFuture.map((lim, idx) => (
+                <div key={idx} className="bg-black/40 border border-white/5 p-4 rounded-xl text-xs text-muted-grey leading-relaxed flex items-start gap-2">
+                  <span className="text-primary-red font-mono">→</span>
+                  <span>{lim}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 12. GITHUB & DEMO LINKS FOOTER */}
+        <footer className="glass-card p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h4 className="text-lg font-bold text-fdf3f2">Interested in the code or architecture?</h4>
+            <p className="text-xs text-muted-grey mt-1">Explore repository structure or review documentation.</p>
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider flex-wrap">
+            {project.demoUrl && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold transition-all flex items-center gap-1.5 shadow-[0_4px_15px_rgba(235,74,66,0.25)] hover:bg-primary-red/90"
+              >
+                <span>Launch Live Demo</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {project.githubUrl ? (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2"
+              >
+                <GithubIcon className="text-primary-red" />
+                <span>Source Code</span>
+              </a>
+            ) : (
+              <button
+                onClick={() => handleLinkNotice('github')}
+                className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2 cursor-pointer"
+              >
+                <GithubIcon className="text-primary-red" />
+                <span>Codebase Notice</span>
+              </button>
+            )}
+
+            <Link
+              to="/#projects"
+              className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold hover:bg-primary-red/90 transition-all"
+            >
+              All Projects →
+            </Link>
+          </div>
+        </footer>
 
       </div>
     </motion.div>
   );
 };
+
 export default ProjectDetailPage;

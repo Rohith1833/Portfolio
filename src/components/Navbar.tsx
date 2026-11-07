@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { PORTFOLIO_CONFIG } from '../portfolioConfig';
 
+const NAV_ITEMS = [
+  { label: 'About', href: '#/#about', id: 'about' },
+  { label: 'Projects', href: '#/#projects', id: 'projects' },
+  { label: 'Skills', href: '#/#skills', id: 'skills' },
+  { label: 'Resume', href: '#/#resume-download', id: 'resume-download' },
+  { label: 'Contact', href: '#/#contact', id: 'contact' }
+];
+
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [scrolled, setScrolled] = useState(false);
-
-  const navItems = [
-    { label: 'About', href: '#/#about', id: 'about' },
-    { label: 'Projects', href: '#/#projects', id: 'projects' },
-    { label: 'Skills', href: '#/#skills', id: 'skills' },
-    { label: 'Contact', href: '#/#contact', id: 'contact' }
-  ];
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -24,7 +25,7 @@ export const Navbar: React.FC = () => {
       const scrollPos = window.scrollY + 200;
       let current = '';
 
-      for (const item of navItems) {
+      for (const item of NAV_ITEMS) {
         const el = document.getElementById(item.id);
         if (el) {
           const top = el.offsetTop;
@@ -70,7 +71,7 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.id;
             return (
               <a
@@ -114,7 +115,7 @@ export const Navbar: React.FC = () => {
       {/* Mobile Drawer (Glass Dropdown Panel) */}
       {isOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full glass-nav rounded-3xl p-6 flex flex-col gap-4 animate-fade-in z-50">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.id;
             return (
               <a

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useReducedMotion, AnimatePresence } from 'framer-motion';
 import {
@@ -7,22 +7,22 @@ import {
   GraduationCap,
   Sparkles,
   ArrowUpRight,
-  ChevronRight
+  ChevronRight,
+  Terminal,
+  Split,
+  Sliders
 } from 'lucide-react';
-import { PORTFOLIO_CONFIG } from './portfolioConfig';
+import { PORTFOLIO_CONFIG, getProjectSlug } from './portfolioConfig';
 import { Navbar } from './components/Navbar';
 import { SpiderwebMotif } from './components/SpiderwebMotif';
-
-
 import { GitHubActivity } from './components/GitHubActivity';
-
-
 import { ScrollSectionWrapper } from './components/ScrollSectionWrapper';
-import { ProjectDetailPage, getProjectSlug } from './components/ProjectDetailPage';
 import { WebCorner } from './components/WebCorner';
 import { CursorSpotlight } from './components/CursorSpotlight';
 import { Magnetic } from './components/Magnetic';
 import { TiltCard } from './components/TiltCard';
+
+const ProjectDetailPage = lazy(() => import('./components/ProjectDetailPage'));
 
 // Custom SVG Icons with uniform stroke weights
 const GithubIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -112,6 +112,7 @@ function MainPortfolio() {
   const shouldReduceMotion = useReducedMotion();
   const location = useLocation();
   const [activeSectionIndex, setActiveSectionIndex] = useState(1);
+  const [projectCategoryFilter, setProjectCategoryFilter] = useState<'All' | 'AI & NLP' | 'Machine Learning' | 'Full-Stack'>('All');
 
   useEffect(() => {
     if (location.hash) {
@@ -127,7 +128,7 @@ function MainPortfolio() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const sections = ['about', 'projects', 'skills', 'certifications', 'education', 'github-contributions', 'contact'];
+    const sections = ['about', 'projects', 'skills', 'certifications', 'education', 'github-contributions', 'resume-download', 'contact'];
     
     const handleScroll = () => {
       const scrollPos = window.scrollY + 350;
@@ -148,7 +149,7 @@ function MainPortfolio() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -178,6 +179,27 @@ function MainPortfolio() {
     }
   };
 
+  // Flagship Project: HumanIntent
+  const flagshipProject = PORTFOLIO_CONFIG.featuredProjects.find(p => p.isFlagship) || PORTFOLIO_CONFIG.featuredProjects[0];
+  
+  // Non-flagship featured projects (Food Delivery Predictor, LocalLens, Health Tracker PWA, IntelliSlide AI)
+  const otherProjects = PORTFOLIO_CONFIG.featuredProjects.filter(p => !p.isFlagship);
+  
+  // Filtered projects
+  const filteredProjects = otherProjects.filter(p => {
+    if (projectCategoryFilter === 'All') return true;
+    if (projectCategoryFilter === 'AI & NLP') {
+      return p.category?.toLowerCase().includes('nlp') || p.category?.toLowerCase().includes('ai');
+    }
+    if (projectCategoryFilter === 'Machine Learning') {
+      return p.category?.toLowerCase().includes('machine learning') || p.category?.toLowerCase().includes('regression');
+    }
+    if (projectCategoryFilter === 'Full-Stack') {
+      return p.category?.toLowerCase().includes('full-stack') || p.category?.toLowerCase().includes('pwa') || p.category?.toLowerCase().includes('database');
+    }
+    return true;
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -189,11 +211,11 @@ function MainPortfolio() {
       {/* 2. Cursor Spotlight */}
       <CursorSpotlight />
 
-      {/* 6. Minimal Scroll Progress Indicator */}
-      <div className="fixed bottom-6 left-6 z-[60] font-mono text-[10px] uppercase tracking-widest text-muted-grey bg-[#080808]/70 border border-white/5 backdrop-blur-md px-4 py-2 rounded-full select-none flex items-center gap-2 shadow-xl">
+      {/* Minimal Scroll Progress Indicator */}
+      <div className="fixed bottom-6 left-6 z-[60] font-mono text-[10px] uppercase tracking-widest text-muted-grey bg-[#080808]/80 border border-white/5 backdrop-blur-md px-4 py-2 rounded-full select-none flex items-center gap-2 shadow-2xl">
         <span className="text-primary-red font-bold">0{activeSectionIndex}</span>
         <span className="opacity-30">—</span>
-        <span>07</span>
+        <span>08</span>
       </div>
 
       {/* Ambient background noise overlay */}
@@ -201,8 +223,8 @@ function MainPortfolio() {
 
       {/* Background Ambient Lighting (Blurred Gradient Orbs) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-primary-red/4 blur-[130px] ambient-glow-pulse" />
-        <div className="absolute top-[40%] right-[-15%] w-[65vw] h-[65vw] rounded-full bg-primary-red/3 blur-[160px] ambient-glow-pulse" style={{ animationDelay: '-3s' }} />
+        <div className="absolute top-[8%] left-[-10%] w-[65vw] h-[65vw] rounded-full bg-primary-red/4 blur-[140px] ambient-glow-pulse" />
+        <div className="absolute top-[38%] right-[-15%] w-[65vw] h-[65vw] rounded-full bg-primary-red/3 blur-[160px] ambient-glow-pulse" style={{ animationDelay: '-3s' }} />
         <div className="absolute bottom-[20%] left-[-20%] w-[55vw] h-[55vw] rounded-full bg-primary-red/4 blur-[140px] ambient-glow-pulse" style={{ animationDelay: '-6s' }} />
       </div>
 
@@ -215,7 +237,7 @@ function MainPortfolio() {
       {/* Global Navbar */}
       <Navbar />
 
-      {/* 1. HERO SECTION (Asymmetric, Left-Heavy Layout) */}
+      {/* 1. HERO SECTION (Asymmetric, Cinematic Layout) */}
       <div ref={heroRef} id="hero-header" className="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
         {/* Subtle gridlines */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
@@ -231,11 +253,11 @@ function MainPortfolio() {
           >
             {/* Left Column: Bold Asymmetric Headline Statement */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              {/* Availability Label (Subtle glass badge) */}
+              {/* Availability Label */}
               <motion.div variants={fadeInUp} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-white/5 backdrop-blur-md w-fit">
                 <span className="w-2 h-2 bg-primary-red rounded-full animate-pulse" />
                 <span className="font-mono text-[10px] uppercase tracking-widest text-primary-red font-bold">
-                  AVAILABLE FOR FREELANCE & FULL-TIME OPPORTUNITIES
+                  PORTFOLIO V2.0 • AI & FULL-STACK SYSTEMS DEVELOPER
                 </span>
               </motion.div>
 
@@ -243,7 +265,7 @@ function MainPortfolio() {
                 variants={fadeInUp}
                 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-fdf3f2 leading-[0.95] max-w-4xl"
               >
-                Building practical <span className="text-primary-red select-all">full-stack</span> and AI-powered web applications & automations.
+                Building practical <span className="text-primary-red select-all">applied AI</span>, machine learning pipelines & full-stack web applications.
               </motion.h1>
             </div>
 
@@ -253,10 +275,10 @@ function MainPortfolio() {
                 variants={fadeInUp}
                 className="text-base text-muted-grey leading-relaxed"
               >
-                {PORTFOLIO_CONFIG.positioning}I combine modern web technologies with AI and automation to turn ideas into practical, production-ready solutions.
+                {PORTFOLIO_CONFIG.positioning} Creator of <strong>HumanIntent</strong>, an intent-preserving prompt optimizer powered by local LLM inference and deterministic verification.
               </motion.p>
 
-              {/* CTAs list (minimalistic vertical list layout with premium glassmorphism buttons) */}
+              {/* CTAs list */}
               <motion.div variants={fadeInUp} className="flex flex-col gap-3.5 font-mono text-xs uppercase tracking-wider">
                 <Magnetic maxMovement={6}>
                   <motion.a
@@ -265,7 +287,7 @@ function MainPortfolio() {
                     transition={springHover}
                     className="bg-primary-red text-near-black px-6 py-4 rounded-full font-bold transition-all flex items-center justify-between cursor-pointer outline-none select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:shadow-[0_6px_25px_rgba(235,74,66,0.35)] w-full"
                   >
-                    <span>View Flagship Projects</span>
+                    <span>Explore Flagship Projects</span>
                     <ChevronRight className="w-4 h-4" />
                   </motion.a>
                 </Magnetic>
@@ -287,7 +309,7 @@ function MainPortfolio() {
                   </motion.a>
                 </Magnetic>
 
-                {PORTFOLIO_CONFIG.linkedinUrl ? (
+                {PORTFOLIO_CONFIG.linkedinUrl && (
                   <Magnetic maxMovement={4}>
                     <motion.a
                       href={PORTFOLIO_CONFIG.linkedinUrl}
@@ -303,21 +325,6 @@ function MainPortfolio() {
                       </span>
                       <ArrowUpRight className="w-4 h-4 text-muted-grey" />
                     </motion.a>
-                  </Magnetic>
-                ) : (
-                  <Magnetic maxMovement={4}>
-                    <motion.button
-                      onClick={() => handlePlaceholderClick('LinkedIn URL')}
-                      whileHover={{ y: -2 }}
-                      transition={springHover}
-                      className="glass-card glass-card-hover px-6 py-4 rounded-full text-muted-grey flex items-center justify-between cursor-pointer outline-none text-left select-none opacity-80 w-full"
-                    >
-                      <span className="flex items-center gap-2">
-                        <LinkedinIcon className="opacity-45" />
-                        LinkedIn [Add]
-                      </span>
-                      <span className="text-[10px] text-primary-red/50">[Configure]</span>
-                    </motion.button>
                   </Magnetic>
                 )}
 
@@ -341,7 +348,7 @@ function MainPortfolio() {
         </div>
       </div>
 
-      {/* 2. ABOUT / INTRODUCTION (Glassmorphism Redesign) */}
+      {/* 2. ABOUT / INTRODUCTION */}
       <ScrollSectionWrapper id="about" className="py-24 px-6 relative overflow-hidden border-t border-b border-white/5">
         <WebCorner position="top-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
@@ -349,33 +356,29 @@ function MainPortfolio() {
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
               <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">SYSTEM://ABOUT_ME</span>
-              {/* Bleeding outline number */}
               <div className="font-mono text-8xl md:text-9xl text-white/5 font-extrabold leading-none select-none -ml-4">01</div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 PROFILE
               </h2>
             </div>
 
-            {/* Visual Photo frame replaced with a clean developer identity card */}
+            {/* Developer Identity Card */}
             <div className="glass-card p-6 rounded-2xl relative mt-4 max-w-xs w-full shadow-2xl overflow-hidden hover:border-primary-red/30 transition-all duration-300">
               <div className="h-52 w-full flex flex-col justify-between select-none relative z-10">
-                {/* Micro tech grid line background inside card */}
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
 
-                {/* Header detail */}
                 <div className="relative z-10 flex flex-col">
                   <h4 className="font-sans text-xl font-bold tracking-tight text-fdf3f2 leading-none uppercase">
                     ROHITH GOWDA S.
                   </h4>
                   <span className="font-mono text-[10px] text-primary-red uppercase tracking-wider font-bold mt-1.5 block">
-                    FULL-STACK DEVELOPER
+                    AI & SOFTWARE DEVELOPER
                   </span>
                   <p className="text-xs text-muted-grey leading-relaxed mt-4 max-w-[220px]">
-                    Building web apps, AI tools & automation systems.
+                    Engineering local LLM tools, ML regression models, and full-stack web applications.
                   </p>
                 </div>
 
-                {/* Footer details */}
                 <div className="relative z-10 border-t border-white/10 pt-4 flex flex-col gap-1.5 font-mono text-[9px] uppercase tracking-wider text-muted-grey">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-primary-red rounded-full animate-pulse" />
@@ -389,19 +392,18 @@ function MainPortfolio() {
             </div>
           </div>
 
-          {/* Right Column: Bio Narrative & glass tags */}
+          {/* Right Column: Bio Narrative & Domain Tags */}
           <div className="lg:col-span-8 lg:mt-12 flex flex-col gap-8">
-            {/* Currently Building Status Line */}
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-grey">
               <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
               <span>Currently building: <span className="font-sans normal-case font-medium text-fdf3f2/90">{PORTFOLIO_CONFIG.currentlyBuilding}</span></span>
             </div>
 
             <h3 className="text-xl md:text-2xl font-bold tracking-tight text-fdf3f2 leading-tight max-w-2xl">
-              I’m a developer who enjoys turning ideas into things that actually work.
+              I’m a developer who bridges algorithmic machine learning, prompt engineering pipelines, and production web interfaces.
             </h3>
             <p className="text-base text-muted-grey leading-relaxed">
-              {PORTFOLIO_CONFIG.careerObjective} Most of my learning comes from building real projects, breaking and fixing things, and understanding how systems work end-to-end.
+              {PORTFOLIO_CONFIG.careerObjective} My philosophy is centered on building end-to-end reproducible projects—from data cleaning and feature engineering to deterministic verification and low-latency local inference.
             </p>
 
             <div className="border-t border-white/10 pt-6">
@@ -421,118 +423,299 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 3. FEATURED PROJECTS SECTION (Glassmorphism Redesign) */}
+      {/* 3. FEATURED PROJECTS SECTION (V2.0 REDESIGN) */}
       <ScrollSectionWrapper id="projects" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-left" variant="dark" />
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-20 my-4">
-          {/* Left Column: Heading and projects list */}
-          <div className="lg:col-span-7 flex flex-col gap-8">
-            <div className="relative">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">REGISTRY://FLAGSHIPS</span>
+        <div className="max-w-6xl mx-auto flex flex-col gap-12 relative z-20 my-4">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/70 font-bold block mb-1">
+                REGISTRY://ENGINEERING_PORTFOLIO_V2
+              </span>
               <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -ml-4">02</div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
                 PROJECTS
               </h2>
+              <p className="text-base text-muted-grey leading-relaxed max-w-2xl mt-4">
+                Practical <strong className="text-fdf3f2">applied AI systems</strong>, <strong className="text-fdf3f2">machine learning pipelines</strong>, and <strong className="text-fdf3f2">full-stack web applications</strong>. Click any project to inspect its architecture and case study.
+              </p>
             </div>
 
-            <p className="text-base text-muted-grey leading-relaxed">
-              Practical <strong className="text-fdf3f2">full-stack web apps</strong> and <strong className="text-fdf3f2">AI systems</strong> built to solve real-world problems. Click on a project to explore its architecture.
-            </p>
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 p-1.5 rounded-full font-mono text-xs flex-wrap">
+              {(['All', 'AI & NLP', 'Machine Learning', 'Full-Stack'] as const).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setProjectCategoryFilter(cat)}
+                  className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
+                    projectCategoryFilter === cat
+                      ? 'bg-primary-red text-near-black font-bold shadow-md'
+                      : 'text-muted-grey hover:text-fdf3f2'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            <div className="flex flex-col gap-5 mt-4">
-              {PORTFOLIO_CONFIG.featuredProjects.map((project, index) => {
-                const slug = getProjectSlug(project.title);
-                return (
-                  <TiltCard key={index} className="w-full">
-                    <MotionLink
-                      to={`/projects/${slug}`}
-                      whileHover={{ y: -4 }}
-                      transition={springHover}
-                      className="glass-card glass-card-hover p-6 rounded-2xl group/row flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer text-left outline-none h-full w-full"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h4 className="text-xl font-bold text-fdf3f2 group-hover/row:text-primary-red transition-colors">
-                            {project.title}
-                          </h4>
-                          <span
-                            className={`font-mono text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${project.badge === 'Live'
+          {/* ========================================================================= */}
+          {/* PRIMARY FEATURED FLAGSHIP SPOTLIGHT: HUMANINTENT */}
+          {/* ========================================================================= */}
+          {(projectCategoryFilter === 'All' || projectCategoryFilter === 'AI & NLP') && (
+            <div className="w-full">
+              <TiltCard className="w-full">
+                <div className="glass-card rounded-3xl p-8 md:p-12 border border-primary-red/40 hover:border-primary-red/80 transition-all duration-300 relative overflow-hidden shadow-[0_8px_40px_rgba(235,74,66,0.12)] group">
+                  {/* Glowing background ambient spot */}
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(circle_at_top_right,rgba(235,74,66,0.15)_0%,transparent_70%)] pointer-events-none" />
+
+                  <div className="relative z-10 flex flex-col gap-6">
+                    {/* Top Row: Badges & Flagship Marker */}
+                    <div className="flex items-center justify-between flex-wrap gap-4 border-b border-white/10 pb-4">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-primary-red/60 text-fdf3f2 bg-primary-red font-bold flex items-center gap-1.5 shadow-[0_0_15px_rgba(235,74,66,0.3)]">
+                          <Sparkles className="w-3.5 h-3.5 text-near-black fill-near-black" />
+                          PRIMARY FEATURED PROJECT
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-green-500/30 text-green-400 bg-green-500/10 font-bold">
+                          ACCEPTED V1.0 FAST-PATH
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-white/10 text-muted-grey bg-white/5">
+                          LOCAL OLLAMA INFERENCE (RTX 3050)
+                        </span>
+                      </div>
+
+                      <span className="font-mono text-xs text-primary-red/80 font-bold uppercase tracking-wider">
+                        AI Engineering / LLM Systems
+                      </span>
+                    </div>
+
+                    {/* Middle: Title, Subtitle & Narrative */}
+                    <div>
+                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-fdf3f2 group-hover:text-primary-red transition-colors tracking-tight">
+                        {flagshipProject.title}
+                      </h3>
+                      <p className="text-base md:text-lg text-primary-red/90 font-medium mt-1">
+                        {flagshipProject.subtitle}
+                      </p>
+                      <p className="text-sm md:text-base text-muted-grey leading-relaxed mt-4 max-w-4xl">
+                        {flagshipProject.description}
+                      </p>
+                    </div>
+
+                    {/* Empirical Benchmark Highlights Banner */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-black/60 border border-white/5 p-4 rounded-2xl font-mono">
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-grey/60 block">Automated Tests</span>
+                        <span className="text-lg md:text-xl font-bold text-green-400">442 / 442</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-grey/60 block">Blind Probes</span>
+                        <span className="text-lg md:text-xl font-bold text-green-400">10 / 10</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-grey/60 block">P50 Latency (Local)</span>
+                        <span className="text-lg md:text-xl font-bold text-fdf3f2">15.62s</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-grey/60 block">Cloud API Egress</span>
+                        <span className="text-lg md:text-xl font-bold text-primary-red">0 Bytes</span>
+                      </div>
+                    </div>
+
+                    {/* Tech Stack Tags */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {flagshipProject.techStack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="font-mono text-[10px] text-fdf3f2/80 bg-white/5 border border-white/10 px-3 py-1 rounded-full"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* CTA row */}
+                    <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-2 text-xs font-mono text-muted-grey">
+                        <Terminal className="w-4 h-4 text-primary-red" />
+                        <span>Deterministic Preprocessing → Single LLM Call → Post Verification</span>
+                      </div>
+
+                      <MotionLink
+                        to={`/projects/${getProjectSlug(flagshipProject.title)}`}
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-primary-red text-near-black px-8 py-3.5 rounded-full font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center gap-2 shadow-[0_4px_20px_rgba(235,74,66,0.3)] hover:bg-primary-red/90"
+                      >
+                        <span>EXPLORE IN-DEPTH CASE STUDY & PIPELINE</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </MotionLink>
+                    </div>
+                  </div>
+                </div>
+              </TiltCard>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* CORE PROJECTS GRID (FOOD DELIVERY, LOCALLENS, AND FULL-STACK SYSTEMS) */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredProjects.map((project, index) => {
+              const slug = getProjectSlug(project.title);
+              const isFood = slug === 'food-delivery-time-predictor';
+              const isLens = slug === 'locallens';
+
+              return (
+                <TiltCard key={index} className="w-full h-full">
+                  <MotionLink
+                    to={`/projects/${slug}`}
+                    whileHover={{ y: -4 }}
+                    transition={springHover}
+                    className="glass-card glass-card-hover p-7 rounded-3xl group/card flex flex-col justify-between gap-6 cursor-pointer text-left outline-none h-full border border-white/10"
+                  >
+                    <div>
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red font-bold">
+                          {project.category}
+                        </span>
+                        <span
+                          className={`font-mono text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${
+                            project.badge === 'Live'
                               ? 'border-green-500/30 text-green-400 bg-green-500/5'
                               : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5'
-                              }`}
-                          >
-                            {project.badge}
-                          </span>
-                        </div>
+                          }`}
+                        >
+                          {project.badge}
+                        </span>
+                      </div>
 
-                        <p className="text-sm text-muted-grey leading-relaxed max-w-2xl group-hover/row:text-fdf3f2 transition-colors mb-4">
-                          {project.description}
+                      {/* Title & Subtitle */}
+                      <h4 className="text-2xl font-bold text-fdf3f2 group-hover/card:text-primary-red transition-colors">
+                        {project.title}
+                      </h4>
+                      {project.subtitle && (
+                        <p className="text-xs text-primary-red/80 font-mono mt-1">
+                          {project.subtitle}
                         </p>
+                      )}
 
-                        {/* Tech tags */}
-                        <div className="flex flex-wrap gap-1.5 mt-3">
-                          {project.techStack.map((tech) => (
-                            <span
-                              key={tech}
-                              className="font-mono text-[10px] text-fdf3f2/70 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full"
-                            >
-                              {tech}
-                            </span>
-                          ))}
+                      <p className="text-sm text-muted-grey leading-relaxed mt-3 group-hover/card:text-fdf3f2 transition-colors">
+                        {project.description}
+                      </p>
+
+                      {/* Custom Feature Snapshot */}
+                      {isFood && (
+                        <div className="mt-4 bg-black/40 border border-white/5 p-3 rounded-xl font-mono text-[11px] text-muted-grey flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-fdf3f2">
+                            <Sliders className="w-3.5 h-3.5 text-primary-red" />
+                            Haversine Distance Pipeline
+                          </span>
+                          <span className="text-green-400">~45k Records</span>
                         </div>
+                      )}
 
-                        {/* Project Card Information Reveal (Role & case study trigger) */}
-                        <div className="mt-4 pt-4 border-t border-white/5 flex flex-col gap-2 md:max-h-0 md:opacity-0 md:group-hover/row:max-h-24 md:group-hover/row:opacity-100 max-h-24 opacity-100 transition-all duration-300 overflow-hidden">
-                          {project.role && (
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">Role:</span>
-                              <span className="font-sans text-xs text-fdf3f2/80 truncate max-w-lg">{project.role}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">Action:</span>
-                            <span className="font-mono text-[10px] uppercase tracking-wider text-primary-red flex items-center gap-1">
-                              EXPLORE CASE STUDY <ArrowUpRight className="w-3.5 h-3.5" />
-                            </span>
-                          </div>
+                      {isLens && (
+                        <div className="mt-4 bg-black/40 border border-white/5 p-3 rounded-xl font-mono text-[11px] text-muted-grey flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-fdf3f2">
+                            <Split className="w-3.5 h-3.5 text-primary-red" />
+                            5-Aspect Clause Splitting
+                          </span>
+                          <span className="text-green-400">74.5% Accuracy</span>
+                        </div>
+                      )}
+
+                      {/* Tech stack tags */}
+                      <div className="flex flex-wrap gap-1.5 mt-4">
+                        {project.techStack.slice(0, 6).map((tech) => (
+                          <span
+                            key={tech}
+                            className="font-mono text-[10px] text-fdf3f2/70 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {project.techStack.length > 6 && (
+                          <span className="font-mono text-[10px] text-muted-grey px-2 py-0.5">
+                            +{project.techStack.length - 6} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom CTA Row */}
+                    <div className="pt-4 border-t border-white/5 flex items-center justify-between font-mono text-xs uppercase tracking-wider text-muted-grey group-hover/card:text-primary-red transition-colors">
+                      <span className="flex items-center gap-1 font-bold">
+                        VIEW CASE STUDY
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {project.demoUrl && (
+                          <span className="text-[10px] text-green-400 bg-green-500/10 border border-green-500/20 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                            Live App
+                          </span>
+                        )}
+                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-grey group-hover/card:bg-primary-red group-hover/card:border-primary-red group-hover/card:text-near-black transition-all">
+                          <ArrowUpRight className="w-4 h-4" />
                         </div>
                       </div>
+                    </div>
+                  </MotionLink>
+                </TiltCard>
+              );
+            })}
+          </div>
 
-                      {/* Hover Arrow Circle (Rounded glass style) */}
-                      <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-muted-grey bg-white/5 group-hover/row:bg-primary-red group-hover/row:border-primary-red group-hover/row:text-near-black transition-all duration-300 shrink-0 self-start md:self-center">
-                        <ArrowUpRight className="w-4 h-4 transform group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 transition-transform" />
+          {/* Academic Projects Subsection */}
+          {PORTFOLIO_CONFIG.academicProjects.length > 0 && (
+            <div className="mt-8 border-t border-white/5 pt-8">
+              <span className="font-mono text-xs uppercase tracking-widest text-muted-grey/60 font-bold block mb-4">
+                Academic & Core Engineering Systems
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PORTFOLIO_CONFIG.academicProjects.map((acad, idx) => (
+                  <Link
+                    key={idx}
+                    to={`/projects/${getProjectSlug(acad.title)}`}
+                    className="glass-card glass-card-hover p-6 rounded-2xl flex flex-col justify-between gap-3 group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20">
+                          {acad.badge || 'Academic'}
+                        </span>
+                        <span className="font-mono text-[10px] text-muted-grey">{acad.category}</span>
                       </div>
-                    </MotionLink>
-                  </TiltCard>
-                );
-              })}
-            </div>
-          </div>
+                      <h5 className="text-lg font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-2">
+                        {acad.title}
+                      </h5>
+                      <p className="text-xs text-muted-grey mt-1 leading-relaxed">
+                        {acad.description}
+                      </p>
+                    </div>
 
-          {/* Right Column: Glowing circular spotlight with dark silhouette graphic */}
-          <div className="lg:col-span-5 flex items-center justify-center relative min-h-[350px] lg:min-h-[450px] mt-8 lg:mt-0 select-none">
-            {/* Glowing red circular background spotlight with richer radial gradients */}
-            <div className="absolute w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.18)_0%,transparent_70%)] pointer-events-none z-0" />
-            <div className="absolute w-60 h-60 rounded-full bg-[radial-gradient(circle,rgba(235,74,66,0.28)_0%,transparent_70%)] pointer-events-none z-0" />
-
-            {/* Silhouette / Graphic Container */}
-            <div className="relative z-10 w-full max-w-sm aspect-square flex items-center justify-center p-4">
-              <img
-                src="/project-silhouette.png"
-                alt="Developer Silhouette"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(235,74,66,0.15)] opacity-90 pointer-events-none"
-              />
+                    <div className="flex items-center justify-between pt-3 border-t border-white/5 font-mono text-[10px] uppercase text-muted-grey">
+                      <span>{acad.techStack.join(' • ')}</span>
+                      <span className="text-primary-red flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Explore Schema <ArrowUpRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </ScrollSectionWrapper>
 
-      {/* 4. TECHNICAL SKILLS SECTION (Glassmorphism Redesign) */}
+      {/* 4. TECHNICAL SKILLS SECTION (V2.0 UPDATED CATEGORIES) */}
       <ScrollSectionWrapper id="skills" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="top-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
-          {/* Left Column: Outline number, title, objective note */}
+          {/* Left Column */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             <div className="relative">
               <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/50 block mb-1">CAPABILITIES://TECH_STACK</span>
@@ -543,32 +726,33 @@ function MainPortfolio() {
             </div>
 
             <p className="text-base text-muted-grey leading-relaxed">
-              Technologies I use to build web applications, AI-powered tools, and automation workflows.
+              Empirical technologies grounded in my actual project engineering across AI, machine learning pipelines, and full-stack software.
             </p>
 
             {/* Growth Roadmap */}
             <div className="mt-4 border border-dashed border-primary-red/30 bg-primary-red/5 p-5 rounded-2xl backdrop-blur-md flex items-start gap-3">
               <Sparkles className="w-4 h-4 text-primary-red shrink-0 mt-0.5" />
               <p className="text-xs text-muted-grey leading-relaxed">
-                <strong className="text-fdf3f2 block mb-1">Development Focus</strong>
-                Building and improving full-stack applications, AI-powered features, and automation workflows while growing stronger in backend architecture, deployment, security, and production-ready development.
+                <strong className="text-fdf3f2 block mb-1">Engineering Focus</strong>
+                Building local-first AI prompt optimizers, Scikit-learn regression models, and scalable full-stack applications with reproducible testing standards.
               </p>
             </div>
           </div>
 
-          {/* Right Column: Arsenal Grid */}
+          {/* Right Column: 4 Skill Categories Grid */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {PORTFOLIO_CONFIG.skills.map((skillGroup, index) => (
               <div key={index} className="glass-card glass-card-hover p-6 rounded-2xl flex flex-col justify-between">
                 <div>
-                  <h4 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4 border-b border-white/10 pb-2">
-                    {skillGroup.category}
+                  <h4 className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold mb-4 border-b border-white/10 pb-2 flex items-center justify-between">
+                    <span>{skillGroup.category}</span>
+                    <span className="text-[10px] text-muted-grey/60">{skillGroup.items.length} Techs</span>
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {skillGroup.items.map((skill) => (
                       <span
                         key={skill}
-                        className="font-sans text-xs text-fdf3f2/90 bg-white/5 border border-white/5 px-2.5 py-1 rounded-full"
+                        className="font-sans text-xs text-fdf3f2/90 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full hover:border-primary-red/40 hover:bg-primary-red/10 transition-colors"
                       >
                         {skill}
                       </span>
@@ -581,7 +765,7 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 5. CERTIFICATIONS (Glassmorphism Redesign) */}
+      {/* 5. CERTIFICATIONS */}
       <ScrollSectionWrapper id="certifications" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="top-left" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
@@ -595,14 +779,13 @@ function MainPortfolio() {
             </div>
 
             <p className="text-base text-muted-grey leading-relaxed">
-              Completed certifications across AI, automation, and programming from industry-recognized platforms.
+              Completed certifications across AI foundations, workflows, Python, and cloud services from recognized providers.
             </p>
 
-            {/* Summary counts */}
             <div className="flex flex-col gap-2 border-t border-white/10 pt-5 mt-2">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-grey/60">Total</span>
-                <span className="font-mono text-xs font-bold text-fdf3f2">{PORTFOLIO_CONFIG.certifications.length}</span>
+                <span className="font-mono text-xs font-bold text-fdf3f2">{PORTFOLIO_CONFIG.certifications.length} Certifications</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-grey/60">Issuers</span>
@@ -621,38 +804,24 @@ function MainPortfolio() {
                   className="group glass-card glass-card-hover rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden"
                 >
                   <div className="flex flex-col gap-2">
-                    {/* Category tag */}
                     <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red/70 font-bold">
                       {cert.category}
                     </span>
-                    {/* Title */}
                     <h4 className="text-sm font-bold text-fdf3f2 leading-snug">
                       {cert.title}
                     </h4>
-                    {/* Issuer + optional year */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-[10px] text-muted-grey/70 uppercase tracking-wider">
-                        {cert.issuer}
-                      </span>
-                      {cert.year && (
-                        <>
-                          <span className="text-border-strong text-xs">·</span>
-                          <span className="font-mono text-[10px] text-muted-grey/50 uppercase tracking-wider">
-                            {cert.year}
-                          </span>
-                        </>
-                      )}
-                    </div>
+                    <span className="font-mono text-[10px] text-muted-grey/70 uppercase tracking-wider">
+                      {cert.issuer}
+                    </span>
                   </div>
 
-                  {/* VIEW CERTIFICATE button */}
                   <a
                     href={cert.pdfPath}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-primary-red hover:text-primary-red/70 transition-colors select-none w-fit group/btn"
                   >
-                    <span>VIEW CERTIFICATE</span>
+                    <span>VIEW VERIFIED CERTIFICATE</span>
                     <ArrowUpRight className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                   </a>
                 </div>
@@ -662,7 +831,7 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 6. EDUCATION (Glassmorphism Redesign) */}
+      {/* 6. EDUCATION */}
       <ScrollSectionWrapper id="education" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
@@ -675,31 +844,26 @@ function MainPortfolio() {
             </div>
 
             <p className="text-base text-muted-grey leading-relaxed">
-              Formal academic coordinates and coursework focus.
+              Formal academic foundation and computer applications coursework.
             </p>
           </div>
 
           <div className="lg:col-span-8 border-t border-white/10 pt-8 flex items-start gap-4">
             <GraduationCap className="w-5 h-5 text-primary-red shrink-0 mt-1" />
             <div className="flex-1">
-              <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">Active Academic Coordinates</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">Degree Program</span>
               <h4 className="text-xl font-bold text-fdf3f2 mt-1">
                 {PORTFOLIO_CONFIG.education.degree}
               </h4>
-              {PORTFOLIO_CONFIG.education.semester && (
-                <p className="font-mono text-xs text-muted-grey mt-0.5">
-                  {PORTFOLIO_CONFIG.education.semester}
-                </p>
-              )}
 
               <p className="text-sm text-muted-grey mt-4 leading-relaxed max-w-2xl">
-                Currently pursuing coursework at <strong className="text-fdf3f2">{PORTFOLIO_CONFIG.education.institution}</strong> in {PORTFOLIO_CONFIG.education.location}.
+                Coursework at <strong className="text-fdf3f2">{PORTFOLIO_CONFIG.education.institution}</strong> in {PORTFOLIO_CONFIG.education.location}.
               </p>
 
               <div className="mt-8 border-t border-white/10 pt-6">
-                <span className="font-mono text-xs text-muted-grey/60 uppercase tracking-widest font-bold block mb-3">Core Coursework Anchor</span>
+                <span className="font-mono text-xs text-muted-grey/60 uppercase tracking-widest font-bold block mb-3">Coursework Focus</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {["Data Structures", "DBMS", "Operating Systems", "Java", "C Programming", "Relational Algebra", "SQL", "Web Applications"].map((course) => (
+                  {["Data Structures", "DBMS", "Operating Systems", "Java", "Python Programming", "Relational Algebra", "SQL", "Web Applications"].map((course) => (
                     <span
                       key={course}
                       className="font-sans text-xs text-fdf3f2/80 bg-white/5 border border-white/5 px-3 py-1 rounded-full"
@@ -714,7 +878,7 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 7. GITHUB ACTIVITIES (Glassmorphism Redesign) */}
+      {/* 7. OPEN SOURCE & GITHUB ACTIVITIES */}
       <ScrollSectionWrapper id="github-contributions" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-left" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
@@ -727,7 +891,7 @@ function MainPortfolio() {
             </div>
 
             <p className="text-base text-muted-grey leading-relaxed">
-              Open source commits and repository tracking loaded in real-time from GitHub API queries.
+              Public repositories, commit history, and code tracking loaded live via GitHub API.
             </p>
           </div>
 
@@ -737,38 +901,81 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 9. RESUME DOWNLOAD ACTION (Glassmorphism Redesign) */}
+      {/* 8. RESUME & ENGINEERING IMPACT SECTION */}
       <ScrollSectionWrapper id="resume-download" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="top-right" variant="dark" />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="glass-card p-10 md:p-12 rounded-3xl text-center flex flex-col items-center justify-center gap-6 max-w-3xl mx-auto shadow-2xl border border-white/10 relative overflow-hidden">
-            {/* Ambient lighting spot inside resume card */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(235,74,66,0.05)_0%,transparent_70%)] pointer-events-none" />
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col gap-10">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red font-bold block mb-1">
+              CURRICULUM VITAE // VERIFIED IMPACT
+            </span>
+            <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -mb-6">07</div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
+              TECHNICAL EXPERIENCE
+            </h2>
+            <p className="text-sm text-muted-grey leading-relaxed mt-4">
+              Key engineering highlights from my project portfolio, ready for recruitment and technical appraisal.
+            </p>
+          </div>
 
-            <FileText className="w-8 h-8 text-primary-red relative z-10" />
-            <div className="flex flex-col gap-2 relative z-10">
-              <h4 className="text-xl font-bold text-fdf3f2">Download Resume</h4>
-              <p className="text-sm text-muted-grey max-w-md mx-auto leading-relaxed">
-                Get a quick overview of my skills, projects, experience, and technical background.
-              </p>
+          {/* 3 Project Bullet Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PORTFOLIO_CONFIG.resumeProjects.map((rp, idx) => (
+              <div key={idx} className="glass-card p-6 rounded-2xl border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                    <h4 className="text-lg font-bold text-fdf3f2">{rp.title}</h4>
+                    <span className="font-mono text-[9px] text-primary-red uppercase font-bold">PROJECT {idx + 1}</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-muted-grey/70 uppercase tracking-wider block mb-4">
+                    {rp.category}
+                  </span>
+                  <ul className="space-y-3 text-xs text-muted-grey leading-relaxed">
+                    {rp.bullets.map((bullet, bIdx) => (
+                      <li key={bIdx} className="flex items-start gap-2">
+                        <span className="text-primary-red font-bold font-mono">▸</span>
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-white/5">
+                  <Link
+                    to={`/projects/${getProjectSlug(rp.title)}`}
+                    className="font-mono text-[10px] uppercase text-primary-red hover:underline flex items-center gap-1 font-bold"
+                  >
+                    View Project Case Study <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Download Resume Action Box */}
+          <div className="glass-card p-8 md:p-10 rounded-3xl text-center flex flex-col items-center justify-center gap-4 max-w-2xl mx-auto w-full shadow-2xl border border-white/10 mt-4">
+            <FileText className="w-8 h-8 text-primary-red" />
+            <div>
+              <h4 className="text-lg font-bold text-fdf3f2">Download Full Developer Resume</h4>
+              <p className="text-xs text-muted-grey mt-1">PDF formatted resume containing technical skills, projects, and educational credentials.</p>
             </div>
             {PORTFOLIO_CONFIG.resumePath ? (
               <Magnetic maxMovement={5}>
                 <a
                   href={PORTFOLIO_CONFIG.resumePath}
                   download="Rohith_Gowda_Resume.pdf"
-                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-full font-bold transition-all select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 relative z-10 block"
+                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-3.5 rounded-full font-bold transition-all select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 block"
                 >
-                  DOWNLOAD RESUME →
+                  DOWNLOAD RESUME (PDF) →
                 </a>
               </Magnetic>
             ) : (
               <Magnetic maxMovement={5}>
                 <button
                   onClick={() => handlePlaceholderClick()}
-                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-4 rounded-full font-bold transition-all select-none cursor-pointer outline-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 relative z-10"
+                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-3.5 rounded-full font-bold transition-all select-none cursor-pointer outline-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300"
                 >
-                  DOWNLOAD RESUME →
+                  DOWNLOAD RESUME (PDF) →
                 </button>
               </Magnetic>
             )}
@@ -776,22 +983,20 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 7. CONTACT / CONNECTION SECTION (Glassmorphism Redesign) */}
+      {/* 9. CONTACT / CONNECTION SECTION */}
       <ScrollSectionWrapper id="contact" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-right" variant="dark" />
         <div className="max-w-3xl mx-auto flex flex-col items-center relative z-10">
-          {/* Heading with outline number 07 */}
           <div className="relative text-center mb-12">
-            <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10">07</div>
+            <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10">08</div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
               CONNECTION
             </h2>
             <p className="text-sm text-muted-grey leading-relaxed mt-4 max-w-md mx-auto">
-              Interested in software internships, software developer fresher roles, or collaborative projects? Let's connect.
+              Interested in software engineering roles, AI system integrations, or collaborative opportunities? Let's connect.
             </p>
           </div>
 
-          {/* Connection options as clean frosted glass cards */}
           <div className="w-full max-w-2xl flex flex-col gap-4 select-none">
             {/* Email Card */}
             <Magnetic maxMovement={4} className="w-full">
@@ -850,7 +1055,7 @@ function MainPortfolio() {
                   <div className="flex flex-col">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">LINKEDIN</span>
                     <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      LinkedIn
+                      LinkedIn Profile
                     </span>
                   </div>
                 </div>
@@ -873,7 +1078,7 @@ function MainPortfolio() {
                   <div className="flex flex-col">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">GITHUB</span>
                     <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      GitHub
+                      GitHub / Rohith1833
                     </span>
                   </div>
                 </div>
@@ -896,7 +1101,7 @@ function MainPortfolio() {
                   <div className="flex flex-col">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">INSTAGRAM</span>
                     <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      Instagram
+                      Instagram Profile
                     </span>
                   </div>
                 </div>
@@ -910,7 +1115,7 @@ function MainPortfolio() {
       {/* FOOTER */}
       <footer className="border-t border-white/5 bg-transparent py-8 px-6 text-center select-none text-muted-grey text-xs font-mono">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} {PORTFOLIO_CONFIG.name}. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {PORTFOLIO_CONFIG.name}. Spidey Portfolio V2.0.</p>
           <div className="flex items-center gap-6">
             <a href={PORTFOLIO_CONFIG.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary-red transition-colors">
               GitHub
@@ -938,7 +1143,21 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<MainPortfolio />} />
-        <Route path="/projects/:id" element={<ProjectDetailPage />} />
+        <Route
+          path="/projects/:id"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center font-mono text-xs text-primary-red gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
+                  <span>INITIALIZING CASE STUDY...</span>
+                </div>
+              }
+            >
+              <ProjectDetailPage />
+            </Suspense>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );
