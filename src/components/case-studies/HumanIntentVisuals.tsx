@@ -41,10 +41,10 @@ export const HumanIntentVisuals: React.FC = () => {
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs">
+      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('comparison')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'comparison'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -56,7 +56,7 @@ export const HumanIntentVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('decomposition')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'decomposition'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -68,7 +68,7 @@ export const HumanIntentVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('benchmarks')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'benchmarks'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'

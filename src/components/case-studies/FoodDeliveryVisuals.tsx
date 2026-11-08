@@ -59,10 +59,10 @@ export const FoodDeliveryVisuals: React.FC = () => {
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs">
+      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('simulator')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'simulator'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -74,7 +74,7 @@ export const FoodDeliveryVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('importance')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'importance'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -86,7 +86,7 @@ export const FoodDeliveryVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('comparison')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'comparison'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -133,7 +133,7 @@ export const FoodDeliveryVisuals: React.FC = () => {
             {/* Traffic Condition */}
             <div>
               <label className="text-xs font-mono text-muted-grey mb-2 block">Road Traffic Density</label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(['Low', 'Medium', 'High', 'Jam'] as const).map((lvl) => (
                   <button
                     key={lvl}
@@ -153,7 +153,7 @@ export const FoodDeliveryVisuals: React.FC = () => {
             {/* Weather Condition */}
             <div>
               <label className="text-xs font-mono text-muted-grey mb-2 block">Atmospheric Weather</label>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {(['Sunny', 'Cloudy', 'Windy', 'Fog', 'Stormy'] as const).map((w) => (
                   <button
                     key={w}

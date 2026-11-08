@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -46,7 +46,6 @@ const springHover = { type: 'spring' as const, stiffness: 300, damping: 30 };
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const shouldReduceMotion = useReducedMotion();
-  const [modalMessage, setModalMessage] = useState<string | null>(null);
 
   // Search in both featuredProjects and academicProjects
   const allProjects: Project[] = [
@@ -82,22 +81,6 @@ export const ProjectDetailPage: React.FC = () => {
   const isFoodDelivery = slug === 'food-delivery-time-predictor';
   const isLocalLens = slug === 'locallens';
 
-  const handleLinkNotice = (type: 'demo' | 'github') => {
-    if (type === 'demo') {
-      if (isHumanIntent) {
-        setModalMessage("HumanIntent runs local inference on Ollama & Llama 3 via an NVIDIA RTX 3050 Laptop GPU. There is no commercial cloud URL, ensuring zero data egress.");
-      } else if (isFoodDelivery) {
-        setModalMessage("Food Delivery Predictor is designed as a local Streamlit application. Live deployment on a public host is pending containerized cloud deployment.");
-      } else if (isLocalLens) {
-        setModalMessage("LocalLens runs locally using Streamlit and SQLite for rapid review intelligence. Online hosting will be provided once deployed.");
-      } else {
-        setModalMessage("This project is currently running in local development mode.");
-      }
-    } else {
-      setModalMessage(`The source repository for ${project.title} is hosted on GitHub under Rohith1833.`);
-    }
-  };
-
   return (
     <motion.div
       initial={shouldReduceMotion ? {} : { opacity: 0, y: 24 }}
@@ -118,29 +101,6 @@ export const ProjectDetailPage: React.FC = () => {
       {/* Web Corner Motifs */}
       <WebCorner position="top-left" />
       <WebCorner position="bottom-right" />
-
-      {/* Modal / Toast Notice */}
-      {modalMessage && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-card max-w-md w-full p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-primary-red font-mono text-xs uppercase tracking-wider font-bold">
-              <Info className="w-4 h-4" />
-              <span>Deployment & Repository Notice</span>
-            </div>
-            <p className="text-sm text-muted-grey leading-relaxed">
-              {modalMessage}
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={() => setModalMessage(null)}
-                className="bg-primary-red text-near-black font-mono text-xs uppercase px-5 py-2 rounded-full font-bold cursor-pointer"
-              >
-                Close Notice
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="max-w-5xl mx-auto relative z-20 flex flex-col gap-12">
         {/* Navigation Bar */}
@@ -224,15 +184,13 @@ export const ProjectDetailPage: React.FC = () => {
                   <ExternalLink className="w-3.5 h-3.5" />
                 </motion.a>
               ) : (
-                <motion.button
-                  onClick={() => handleLinkNotice('demo')}
-                  whileHover={{ y: -2 }}
-                  transition={springHover}
-                  className="bg-white/10 hover:bg-white/15 text-fdf3f2 px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                <div
+                  className="bg-white/5 border border-white/10 text-muted-grey px-5 py-3 rounded-full font-mono text-xs uppercase tracking-wider flex items-center gap-2 select-none cursor-default"
+                  title="Executes locally with zero cloud API token egress"
                 >
-                  <span>{isHumanIntent ? 'Local Ollama Runtime' : 'Streamlit Local Engine'}</span>
-                  <Info className="w-3.5 h-3.5 text-primary-red" />
-                </motion.button>
+                  <span className="w-2 h-2 rounded-full bg-primary-red/80" />
+                  <span>{isHumanIntent ? 'Local Ollama Runtime (RTX 3050)' : 'Local System Architecture'}</span>
+                </div>
               )}
 
               {project.githubUrl ? (
@@ -249,16 +207,13 @@ export const ProjectDetailPage: React.FC = () => {
                   <ArrowUpRight className="w-3.5 h-3.5 text-muted-grey" />
                 </motion.a>
               ) : (
-                <motion.button
-                  onClick={() => handleLinkNotice('github')}
-                  whileHover={{ y: -2 }}
-                  transition={springHover}
-                  className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2 cursor-pointer"
+                <div
+                  className="glass-card px-5 py-3 rounded-full text-muted-grey/70 flex items-center gap-2 select-none border border-white/5 opacity-80 cursor-default"
+                  title="Source repository is currently private / internal"
                 >
-                  <GithubIcon className="text-primary-red" />
-                  <span>GitHub: Rohith1833</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-grey" />
-                </motion.button>
+                  <GithubIcon className="text-muted-grey/50" />
+                  <span>Repository: Local / Private</span>
+                </div>
               )}
             </div>
           </div>
@@ -561,7 +516,7 @@ export const ProjectDetailPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider flex-wrap">
-            {project.demoUrl && (
+            {project.demoUrl ? (
               <a
                 href={project.demoUrl}
                 target="_blank"
@@ -571,6 +526,11 @@ export const ProjectDetailPage: React.FC = () => {
                 <span>Launch Live Demo</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
+            ) : (
+              <div className="bg-white/5 border border-white/10 text-muted-grey px-5 py-3 rounded-full flex items-center gap-2 select-none cursor-default">
+                <span className="w-2 h-2 rounded-full bg-primary-red/80" />
+                <span>{isHumanIntent ? 'Local Ollama Runtime' : 'Local Architecture'}</span>
+              </div>
             )}
             {project.githubUrl ? (
               <a
@@ -583,18 +543,15 @@ export const ProjectDetailPage: React.FC = () => {
                 <span>Source Code</span>
               </a>
             ) : (
-              <button
-                onClick={() => handleLinkNotice('github')}
-                className="glass-card glass-card-hover px-6 py-3 rounded-full text-fdf3f2 flex items-center gap-2 cursor-pointer"
-              >
-                <GithubIcon className="text-primary-red" />
-                <span>Codebase Notice</span>
-              </button>
+              <div className="glass-card px-5 py-3 rounded-full text-muted-grey/70 flex items-center gap-2 select-none border border-white/5 opacity-80 cursor-default">
+                <GithubIcon className="text-muted-grey/50" />
+                <span>Repository: Local / Private</span>
+              </div>
             )}
 
             <Link
               to="/#projects"
-              className="bg-primary-red text-near-black px-6 py-3 rounded-full font-bold hover:bg-primary-red/90 transition-all"
+              className="bg-white/10 hover:bg-white/15 text-fdf3f2 border border-white/10 px-6 py-3 rounded-full font-bold transition-all"
             >
               All Projects →
             </Link>

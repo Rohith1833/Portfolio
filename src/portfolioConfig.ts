@@ -443,6 +443,7 @@ export const PORTFOLIO_CONFIG: PortfolioConfig = {
       category: "Full-Stack Development / PWA",
       badge: "Live",
       isFlagship: false,
+      githubUrl: "https://github.com/Rohith1833/health-tracker",
       description: "Full-stack health & fitness tracking Progressive Web App, built with a production-oriented approach rather than a simple CRUD project. Focused entirely on convenient home-workouts.",
       techStack: [
         "React", "TypeScript", "Vite", "Tailwind CSS", "React Router",

@@ -62,10 +62,10 @@ export const LocalLensVisuals: React.FC = () => {
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs">
+      <div className="flex items-center gap-2 border-b border-white/5 pb-2 font-mono text-xs overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('explorer')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'explorer'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -77,7 +77,7 @@ export const LocalLensVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('distribution')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'distribution'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -89,7 +89,7 @@ export const LocalLensVisuals: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('evaluation')}
-          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === 'evaluation'
               ? 'bg-white/10 text-fdf3f2 font-bold border border-white/10'
               : 'text-muted-grey hover:text-fdf3f2'
@@ -191,7 +191,7 @@ export const LocalLensVisuals: React.FC = () => {
             <h5 className="font-mono text-xs uppercase tracking-wider text-muted-grey/60 font-bold mb-3">
               5-Aspect Opinion Aggregation
             </h5>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {Object.entries(currentReview.aspects).map(([aspectName, data]) => {
                 const isPos = data.status === 'positive';
                 const isNeg = data.status === 'negative';

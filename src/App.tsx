@@ -21,8 +21,10 @@ import { WebCorner } from './components/WebCorner';
 import { CursorSpotlight } from './components/CursorSpotlight';
 import { Magnetic } from './components/Magnetic';
 import { TiltCard } from './components/TiltCard';
+import { ContactForm } from './components/ContactForm';
 
 const ProjectDetailPage = lazy(() => import('./components/ProjectDetailPage'));
+const NotFoundPage = lazy(() => import('./components/NotFoundPage'));
 
 // Custom SVG Icons with uniform stroke weights
 const GithubIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -167,17 +169,6 @@ function MainPortfolio() {
   const heroOpacity = useTransform(heroScroll, [0, 0.6], [1, 0]);
   const smoothHeroY = useSpring(heroTextY, { stiffness: 90, damping: 22 });
   const smoothHeroOpacity = useSpring(heroOpacity, { stiffness: 90, damping: 22 });
-
-  const handlePlaceholderClick = (field?: string) => {
-    const term = field ? field.toLowerCase() : '';
-    if (term.includes('linkedin')) {
-      alert('The LinkedIn profile is currently offline. Please reach out directly to rohithmohith78@gmail.com!');
-    } else if (term.includes('certification') || term.includes('credential')) {
-      alert('Credentials verification is currently offline. Please reach out directly to rohithmohith78@gmail.com!');
-    } else {
-      alert('The requested document is currently offline. Please reach out directly to rohithmohith78@gmail.com for a copy!');
-    }
-  };
 
   // Flagship Project: HumanIntent
   const flagshipProject = PORTFOLIO_CONFIG.featuredProjects.find(p => p.isFlagship) || PORTFOLIO_CONFIG.featuredProjects[0];
@@ -971,12 +962,12 @@ function MainPortfolio() {
               </Magnetic>
             ) : (
               <Magnetic maxMovement={5}>
-                <button
-                  onClick={() => handlePlaceholderClick()}
-                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-3.5 rounded-full font-bold transition-all select-none cursor-pointer outline-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300"
+                <a
+                  href={`mailto:${PORTFOLIO_CONFIG.contactEmail}?subject=Resume%20Request%20-%20Rohith%20Gowda`}
+                  className="bg-primary-red hover:bg-primary-red/90 text-near-black font-mono text-xs uppercase tracking-wider px-8 py-3.5 rounded-full font-bold transition-all select-none shadow-[0_4px_20px_rgba(235,74,66,0.25)] hover:scale-[1.02] duration-300 block"
                 >
-                  DOWNLOAD RESUME (PDF) →
-                </button>
+                  REQUEST RESUME VIA EMAIL →
+                </a>
               </Magnetic>
             )}
           </div>
@@ -986,128 +977,140 @@ function MainPortfolio() {
       {/* 9. CONTACT / CONNECTION SECTION */}
       <ScrollSectionWrapper id="contact" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-right" variant="dark" />
-        <div className="max-w-3xl mx-auto flex flex-col items-center relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col items-center relative z-10">
           <div className="relative text-center mb-12">
             <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10">08</div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
               CONNECTION
             </h2>
-            <p className="text-sm text-muted-grey leading-relaxed mt-4 max-w-md mx-auto">
-              Interested in software engineering roles, AI system integrations, or collaborative opportunities? Let's connect.
+            <p className="text-sm text-muted-grey leading-relaxed mt-4 max-w-lg mx-auto">
+              Interested in software engineering roles, AI system integrations, or collaborative opportunities? Send a verified dispatch or reach out directly.
             </p>
           </div>
 
-          <div className="w-full max-w-2xl flex flex-col gap-4 select-none">
-            {/* Email Card */}
-            <Magnetic maxMovement={4} className="w-full">
-              <a
-                href={`mailto:${PORTFOLIO_CONFIG.contactEmail}`}
-                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
-                    <Mail className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">EMAIL</span>
-                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5 select-all">
-                      {PORTFOLIO_CONFIG.contactEmail}
-                    </span>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            </Magnetic>
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Direct Contact Channels */}
+            <div className="lg:col-span-5 flex flex-col gap-3.5 select-none">
+              <span className="font-mono text-[10px] tracking-widest text-primary-red uppercase mb-1">
+                // DIRECT COMMS CHANNELS
+              </span>
 
-            {/* Phone Card */}
-            <Magnetic maxMovement={4} className="w-full">
-              <a
-                href={`tel:${PORTFOLIO_CONFIG.contactPhone.replace(/\s+/g, '')}`}
-                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
-                    <PhoneIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+              {/* Email Card */}
+              <Magnetic maxMovement={4} className="w-full">
+                <a
+                  href={`mailto:${PORTFOLIO_CONFIG.contactEmail}`}
+                  className="group glass-card glass-card-hover p-4.5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                      <Mail className="w-4 h-4 text-muted-grey group-hover:text-primary-red transition-colors" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">EMAIL</span>
+                      <span className="font-sans text-xs md:text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5 select-all">
+                        {PORTFOLIO_CONFIG.contactEmail}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">PHONE</span>
-                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      {PORTFOLIO_CONFIG.contactPhone}
-                    </span>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            </Magnetic>
+                  <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              </Magnetic>
 
-            {/* LinkedIn Card */}
-            <Magnetic maxMovement={4} className="w-full">
-              <a
-                href={PORTFOLIO_CONFIG.linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
-                    <LinkedinIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+              {/* Phone Card */}
+              <Magnetic maxMovement={4} className="w-full">
+                <a
+                  href={`tel:${PORTFOLIO_CONFIG.contactPhone.replace(/\s+/g, '')}`}
+                  className="group glass-card glass-card-hover p-4.5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                      <PhoneIcon className="w-4 h-4 text-muted-grey group-hover:text-primary-red transition-colors" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">PHONE</span>
+                      <span className="font-sans text-xs md:text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                        {PORTFOLIO_CONFIG.contactPhone}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">LINKEDIN</span>
-                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      LinkedIn Profile
-                    </span>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            </Magnetic>
+                  <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              </Magnetic>
 
-            {/* GitHub Card */}
-            <Magnetic maxMovement={4} className="w-full">
-              <a
-                href={PORTFOLIO_CONFIG.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
-                    <GithubIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+              {/* LinkedIn Card */}
+              <Magnetic maxMovement={4} className="w-full">
+                <a
+                  href={PORTFOLIO_CONFIG.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group glass-card glass-card-hover p-4.5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                      <LinkedinIcon className="w-4 h-4 text-muted-grey group-hover:text-primary-red transition-colors" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">LINKEDIN</span>
+                      <span className="font-sans text-xs md:text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                        LinkedIn Profile
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">GITHUB</span>
-                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      GitHub / Rohith1833
-                    </span>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            </Magnetic>
+                  <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              </Magnetic>
 
-            {/* Instagram Card */}
-            <Magnetic maxMovement={4} className="w-full">
-              <a
-                href={PORTFOLIO_CONFIG.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group glass-card glass-card-hover p-5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
-                    <InstagramIcon className="w-4.5 h-4.5 text-muted-grey group-hover:text-primary-red transition-colors" />
+              {/* GitHub Card */}
+              <Magnetic maxMovement={4} className="w-full">
+                <a
+                  href={PORTFOLIO_CONFIG.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group glass-card glass-card-hover p-4.5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                      <GithubIcon className="w-4 h-4 text-muted-grey group-hover:text-primary-red transition-colors" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">GITHUB</span>
+                      <span className="font-sans text-xs md:text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                        GitHub / Rohith1833
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">INSTAGRAM</span>
-                    <span className="font-sans text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
-                      Instagram Profile
-                    </span>
+                  <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              </Magnetic>
+
+              {/* Instagram Card */}
+              <Magnetic maxMovement={4} className="w-full">
+                <a
+                  href={PORTFOLIO_CONFIG.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group glass-card glass-card-hover p-4.5 rounded-2xl flex items-center justify-between outline-none transition-all duration-300 w-full block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center bg-white/5 transition-all duration-300 group-hover:border-primary-red/30">
+                      <InstagramIcon className="w-4 h-4 text-muted-grey group-hover:text-primary-red transition-colors" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-grey/50">INSTAGRAM</span>
+                      <span className="font-sans text-xs md:text-sm font-bold text-fdf3f2 group-hover:text-primary-red transition-colors mt-0.5">
+                        Instagram Profile
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            </Magnetic>
+                  <ArrowUpRight className="w-4 h-4 text-muted-grey group-hover:text-primary-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              </Magnetic>
+            </div>
+
+            {/* Interactive Contact Dispatch Form */}
+            <div className="lg:col-span-7">
+              <ContactForm />
+            </div>
           </div>
         </div>
       </ScrollSectionWrapper>
@@ -1155,6 +1158,21 @@ function AnimatedRoutes() {
               }
             >
               <ProjectDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center font-mono text-xs text-primary-red gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
+                  <span>INITIALIZING TELEMETRY...</span>
+                </div>
+              }
+            >
+              <NotFoundPage />
             </Suspense>
           }
         />

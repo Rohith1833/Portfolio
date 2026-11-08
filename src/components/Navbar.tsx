@@ -50,10 +50,35 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', `/#/#${id}`);
+      setActiveSection(id);
+    }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const hero = document.getElementById('hero-header');
+    if (hero) {
+      e.preventDefault();
+      hero.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', '#/');
+      setActiveSection('');
+    }
+  };
+
   const handleResumeClick = (e: React.MouseEvent) => {
     if (!PORTFOLIO_CONFIG.resumePath) {
       e.preventDefault();
-      alert('The requested document is currently offline. Please reach out directly to rohithmohith78@gmail.com for a copy!');
+      const resumeSection = document.getElementById('resume-download');
+      if (resumeSection) {
+        resumeSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = `mailto:${PORTFOLIO_CONFIG.contactEmail}?subject=${encodeURIComponent('Resume Request — Rohith Gowda S.')}`;
+      }
     }
   };
 
@@ -65,7 +90,12 @@ export const Navbar: React.FC = () => {
     }`}>
       <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'}`}>
         {/* Logo */}
-        <a href="#/" className="flex items-center outline-none select-none transition-transform hover:scale-[1.02]">
+        <a
+          href="#/"
+          onClick={handleLogoClick}
+          aria-label="Back to Top / Homepage"
+          className="flex items-center outline-none select-none transition-transform hover:scale-[1.02]"
+        >
           <img src="/logo.png" alt="Rohith Logo" className={`w-auto object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.08)] transition-all duration-300 ${scrolled ? 'h-8' : 'h-9'}`} />
         </a>
 
@@ -77,6 +107,7 @@ export const Navbar: React.FC = () => {
               <a
                 key={item.label}
                 href={item.href}
+                onClick={(e) => handleNavClick(e, item.id)}
                 className={`font-mono text-xs uppercase tracking-wider transition-colors relative py-2 ${
                   isActive ? 'text-fdf3f2 font-bold' : 'text-muted-grey hover:text-fdf3f2'
                 }`}
@@ -92,10 +123,10 @@ export const Navbar: React.FC = () => {
             );
           })}
           <a
-            href={PORTFOLIO_CONFIG.resumePath || '#'}
+            href={PORTFOLIO_CONFIG.resumePath || '#/#resume-download'}
             onClick={handleResumeClick}
             download={PORTFOLIO_CONFIG.resumePath ? 'Rohith_Gowda_Resume.pdf' : undefined}
-            className="font-mono text-xs uppercase tracking-wider text-fdf3f2 border border-primary-red/50 hover:border-primary-red hover:bg-primary-red/10 px-5 py-2 rounded-full transition-all flex items-center gap-1.5"
+            className="font-mono text-xs uppercase tracking-wider text-fdf3f2 border border-primary-red/50 hover:border-primary-red hover:bg-primary-red/10 px-5 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer"
           >
             Resume
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -121,7 +152,10 @@ export const Navbar: React.FC = () => {
               <a
                 key={item.label}
                 href={item.href}
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  setIsOpen(false);
+                  handleNavClick(e, item.id);
+                }}
                 className={`font-mono text-sm uppercase tracking-wider py-2 border-b border-white/5 transition-colors ${
                   isActive ? 'text-primary-red font-bold' : 'text-muted-grey hover:text-fdf3f2'
                 }`}
@@ -131,15 +165,15 @@ export const Navbar: React.FC = () => {
             );
           })}
           <a
-            href={PORTFOLIO_CONFIG.resumePath || '#'}
+            href={PORTFOLIO_CONFIG.resumePath || '#/#resume-download'}
             onClick={(e) => {
               setIsOpen(false);
               handleResumeClick(e);
             }}
             download={PORTFOLIO_CONFIG.resumePath ? 'Rohith_Gowda_Resume.pdf' : undefined}
-            className="font-mono text-sm uppercase tracking-wider text-center text-fdf3f2 border border-primary-red bg-primary-red/10 py-3 rounded-full transition-all mt-2"
+            className="font-mono text-sm uppercase tracking-wider text-center text-fdf3f2 border border-primary-red bg-primary-red/10 py-3 rounded-full transition-all mt-2 cursor-pointer"
           >
-            Resume Download
+            Resume
           </a>
         </div>
       )}

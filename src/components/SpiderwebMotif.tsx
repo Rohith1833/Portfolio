@@ -126,7 +126,7 @@ export const SpiderwebMotif: React.FC = () => {
       window.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerleave', handlePointerLeave);
     };
-  }, [windowWidth, edgeSide, shouldReduceMotion]);
+  }, [windowWidth, edgeSide, shouldReduceMotion, mouseX, mouseY, edgeOpacity]);
 
   // Compute a simple, high-performance spine path running along the right side of the screen
   const [spinePathData, setSpinePathData] = useState("");
