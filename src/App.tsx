@@ -4,7 +4,6 @@ import { motion, useScroll, useTransform, useSpring, useReducedMotion, AnimatePr
 import {
   Mail,
   FileText,
-  GraduationCap,
   Sparkles,
   ArrowUpRight,
   ChevronRight,
@@ -22,6 +21,9 @@ import { CursorSpotlight } from './components/CursorSpotlight';
 import { Magnetic } from './components/Magnetic';
 import { TiltCard } from './components/TiltCard';
 import { ContactForm } from './components/ContactForm';
+import { InteractiveTerminal } from './components/InteractiveTerminal';
+import { ScrollProgress } from './components/ScrollProgress';
+import { BackToTop } from './components/BackToTop';
 
 const ProjectDetailPage = lazy(() => import('./components/ProjectDetailPage'));
 const NotFoundPage = lazy(() => import('./components/NotFoundPage'));
@@ -117,13 +119,25 @@ function MainPortfolio() {
   const [projectCategoryFilter, setProjectCategoryFilter] = useState<'All' | 'AI & NLP' | 'Machine Learning' | 'Full-Stack'>('All');
 
   useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // Only scroll to a section if a specific valid anchor hash was requested (e.g. #projects)
+    const cleanHash = location.hash ? location.hash.replace(/^#\/?#?/, '') : '';
+    if (cleanHash) {
+      const element = document.getElementById(cleanHash);
       if (element) {
         setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth' });
         }, 150);
+        return;
       }
+    }
+
+    // When the portfolio is opened normally at root, ensure it stays at the top (first page / hero)
+    if (location.pathname === '/') {
+      window.scrollTo(0, 0);
     }
   }, [location]);
 
@@ -154,10 +168,6 @@ function MainPortfolio() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Overall scroll progress bar
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });
 
   // Hero parallax progress
   const { scrollYProgress: heroScroll } = useScroll({
@@ -220,10 +230,10 @@ function MainPortfolio() {
       </div>
 
       {/* Scroll Progress Indicator */}
-      <motion.div
-        style={{ scaleX, transformOrigin: 'left' }}
-        className="fixed top-0 left-0 w-full h-[3px] bg-primary-red z-[60] pointer-events-none"
-      />
+      <ScrollProgress />
+
+      {/* Back to Top Button */}
+      <BackToTop />
 
       {/* Global Navbar */}
       <Navbar />
@@ -233,6 +243,34 @@ function MainPortfolio() {
         {/* Subtle gridlines */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
         <WebCorner position="top-left" />
+
+        {/* HUD Data Readouts — Left Edge */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-6 z-10 select-none pointer-events-none">
+          {[
+            { label: 'SYS', value: 'ONLINE' },
+            { label: 'LAT', value: '15.62s' },
+            { label: 'GPU', value: 'RTX 3050' },
+          ].map((d) => (
+            <div key={d.label} className="flex flex-col items-start">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-primary-red/40">{d.label}</span>
+              <span className="font-mono text-[10px] text-muted-grey/50">{d.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* HUD Data Readouts — Right Edge */}
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-6 z-10 select-none pointer-events-none items-end">
+          {[
+            { label: 'TESTS', value: '442/442' },
+            { label: 'PROBES', value: '10/10' },
+            { label: 'API', value: '0 BYTES' },
+          ].map((d) => (
+            <div key={d.label} className="flex flex-col items-end">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-primary-red/40">{d.label}</span>
+              <span className="font-mono text-[10px] text-muted-grey/50">{d.value}</span>
+            </div>
+          ))}
+        </div>
 
         <div className="max-w-6xl mx-auto px-6 w-full relative z-20">
           <motion.div
@@ -244,11 +282,17 @@ function MainPortfolio() {
           >
             {/* Left Column: Bold Asymmetric Headline Statement */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              {/* Availability Label */}
-              <motion.div variants={fadeInUp} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-white/5 backdrop-blur-md w-fit">
-                <span className="w-2 h-2 bg-primary-red rounded-full animate-pulse" />
-                <span className="font-mono text-[10px] uppercase tracking-widest text-primary-red font-bold">
-                  PORTFOLIO V2.0 • AI & FULL-STACK SYSTEMS DEVELOPER
+              {/* HUD Status Header */}
+              <motion.div variants={fadeInUp} className="flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md w-fit font-mono text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-primary-red rounded-full animate-pulse" />
+                  <span className="uppercase tracking-widest text-primary-red font-bold">
+                    PORTFOLIO V2.1 • APPLIED AI & FULL-STACK
+                  </span>
+                </div>
+                <span className="text-white/20 hidden sm:inline">|</span>
+                <span className="text-muted-grey/70 hidden sm:inline tracking-wider">
+                  LOC://BLR 12.97°N 77.59°E
                 </span>
               </motion.div>
 
@@ -258,6 +302,15 @@ function MainPortfolio() {
               >
                 Building practical <span className="text-primary-red select-all">applied AI</span>, machine learning pipelines & full-stack web applications.
               </motion.h1>
+
+              {/* HUD Sub-Bar */}
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-grey/60 uppercase">
+                <span className="text-primary-red">[</span>
+                <span className="text-primary-red/80 font-bold">SPIDEY_OS // TELEMETRY</span>
+                <span className="text-primary-red">]</span>
+                <span className="w-8 h-px bg-white/10 hidden sm:inline-block" />
+                <span className="hidden sm:inline">CORE_SYSTEMS: VERIFIED NOMINAL</span>
+              </motion.div>
             </div>
 
             {/* Right Column: Mini Subtitle, Links stack, and Positioning */}
@@ -414,6 +467,19 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
+      {/* INTERACTIVE TERMINAL */}
+      <ScrollSectionWrapper className="py-16 px-6 relative overflow-hidden border-b border-white/5">
+        <div className="max-w-3xl mx-auto relative z-10">
+          <div className="flex items-center gap-2 mb-6">
+            <Terminal className="w-4 h-4 text-primary-red" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-grey">
+              INTERACTIVE TERMINAL — TRY TYPING A COMMAND
+            </span>
+          </div>
+          <InteractiveTerminal />
+        </div>
+      </ScrollSectionWrapper>
+
       {/* 3. FEATURED PROJECTS SECTION (V2.0 REDESIGN) */}
       <ScrollSectionWrapper id="projects" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-left" variant="dark" />
@@ -461,6 +527,15 @@ function MainPortfolio() {
                 <div className="glass-card rounded-3xl p-8 md:p-12 border border-primary-red/40 hover:border-primary-red/80 transition-all duration-300 relative overflow-hidden shadow-[0_8px_40px_rgba(235,74,66,0.12)] group">
                   {/* Glowing background ambient spot */}
                   <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(circle_at_top_right,rgba(235,74,66,0.15)_0%,transparent_70%)] pointer-events-none" />
+
+                  {/* Cinematic Background Reveal */}
+                  <img
+                    src="/project-silhouette.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute -right-4 -bottom-4 max-h-72 w-auto object-contain opacity-5 group-hover:opacity-20 group-hover:scale-105 transition-all duration-700 pointer-events-none select-none mix-blend-screen"
+                    loading="lazy"
+                  />
 
                   <div className="relative z-10 flex flex-col gap-6">
                     {/* Top Row: Badges & Flagship Marker */}
@@ -565,9 +640,18 @@ function MainPortfolio() {
                     to={`/projects/${slug}`}
                     whileHover={{ y: -4 }}
                     transition={springHover}
-                    className="glass-card glass-card-hover p-7 rounded-3xl group/card flex flex-col justify-between gap-6 cursor-pointer text-left outline-none h-full border border-white/10"
+                    className="glass-card glass-card-hover p-7 rounded-3xl group/card flex flex-col justify-between gap-6 cursor-pointer text-left outline-none h-full border border-white/10 relative overflow-hidden"
                   >
-                    <div>
+                    {/* Cinematic Silhouette Reveal on Hover */}
+                    <img
+                      src="/project-silhouette.png"
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute -right-6 -bottom-6 max-h-44 w-auto object-contain opacity-0 group-hover/card:opacity-15 group-hover/card:scale-105 group-hover/card:translate-x-1 group-hover/card:-translate-y-1 transition-all duration-500 pointer-events-none select-none mix-blend-screen"
+                      loading="lazy"
+                    />
+
+                    <div className="relative z-10">
                       {/* Top Badges */}
                       <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                         <span className="font-mono text-[9px] uppercase tracking-widest text-primary-red font-bold">
@@ -638,7 +722,7 @@ function MainPortfolio() {
                     </div>
 
                     {/* Bottom CTA Row */}
-                    <div className="pt-4 border-t border-white/5 flex items-center justify-between font-mono text-xs uppercase tracking-wider text-muted-grey group-hover/card:text-primary-red transition-colors">
+                    <div className="relative z-10 pt-4 border-t border-white/5 flex items-center justify-between font-mono text-xs uppercase tracking-wider text-muted-grey group-hover/card:text-primary-red transition-colors">
                       <span className="flex items-center gap-1 font-bold">
                         VIEW CASE STUDY
                       </span>
@@ -822,7 +906,7 @@ function MainPortfolio() {
         </div>
       </ScrollSectionWrapper>
 
-      {/* 6. EDUCATION */}
+      {/* 6. DEVELOPER JOURNEY TIMELINE */}
       <ScrollSectionWrapper id="education" className="py-24 px-6 relative overflow-hidden border-b border-white/5">
         <WebCorner position="bottom-right" variant="dark" />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
@@ -830,39 +914,98 @@ function MainPortfolio() {
             <div className="relative">
               <div className="font-mono text-8xl md:text-9xl text-border-strong font-extrabold leading-none select-none opacity-10 -ml-4">05</div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-fdf3f2 leading-none uppercase mt-2">
-                BACKGROUND
+                JOURNEY
               </h2>
             </div>
 
             <p className="text-base text-muted-grey leading-relaxed">
-              Formal academic foundation and computer applications coursework.
+              Academic foundation, key milestones, and the developer path from coursework to applied engineering.
             </p>
           </div>
 
-          <div className="lg:col-span-8 border-t border-white/10 pt-8 flex items-start gap-4">
-            <GraduationCap className="w-5 h-5 text-primary-red shrink-0 mt-1" />
-            <div className="flex-1">
-              <span className="font-mono text-xs uppercase tracking-widest text-primary-red font-bold">Degree Program</span>
-              <h4 className="text-xl font-bold text-fdf3f2 mt-1">
-                {PORTFOLIO_CONFIG.education.degree}
-              </h4>
+          <div className="lg:col-span-8">
+            {/* Animated Vertical Timeline */}
+            <div className="relative pl-8 border-l border-white/10">
+              {/* Timeline nodes */}
+              {[
+                {
+                  year: '2022',
+                  title: 'Started BCA Program',
+                  subtitle: PORTFOLIO_CONFIG.education.institution,
+                  desc: `Began ${PORTFOLIO_CONFIG.education.degree} in ${PORTFOLIO_CONFIG.education.location}. Foundational coursework in programming, data structures, and databases.`,
+                  type: 'education' as const,
+                },
+                {
+                  year: '2023',
+                  title: 'Core CS & First Projects',
+                  subtitle: 'Java, Python, SQL, DBMS',
+                  desc: 'Deep dive into object-oriented programming, relational database management, operating systems, and web application development.',
+                  type: 'milestone' as const,
+                },
+                {
+                  year: '2024',
+                  title: 'AI & Machine Learning Focus',
+                  subtitle: 'Scikit-learn, NLP, Streamlit',
+                  desc: 'Built Food Delivery Time Predictor (ML regression) and LocalLens (aspect-based sentiment analysis). Deployed live applications.',
+                  type: 'project' as const,
+                },
+                {
+                  year: '2025',
+                  title: 'HumanIntent — Flagship System',
+                  subtitle: 'Local LLM · FastAPI · Next.js',
+                  desc: 'Architected an intent-preserving prompt optimizer with deterministic verification, achieving 442/442 automated tests on local Ollama/Llama 3 inference.',
+                  type: 'flagship' as const,
+                },
+              ].map((node, i) => (
+                <motion.div
+                  key={node.year}
+                  initial={shouldReduceMotion ? {} : { opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-10% 0px' }}
+                  transition={shouldReduceMotion ? {} : { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative mb-10 last:mb-0"
+                >
+                  {/* Timeline dot */}
+                  <div className={`absolute -left-[calc(2rem+5px)] top-1 w-2.5 h-2.5 rounded-full border-2 ${
+                    node.type === 'flagship'
+                      ? 'bg-primary-red border-primary-red shadow-[0_0_12px_rgba(235,74,66,0.5)]'
+                      : node.type === 'project'
+                        ? 'bg-primary-red/50 border-primary-red/60'
+                        : 'bg-white/10 border-white/20'
+                  }`} />
 
-              <p className="text-sm text-muted-grey mt-4 leading-relaxed max-w-2xl">
-                Coursework at <strong className="text-fdf3f2">{PORTFOLIO_CONFIG.education.institution}</strong> in {PORTFOLIO_CONFIG.education.location}.
-              </p>
+                  {/* Year badge */}
+                  <span className={`font-mono text-[11px] font-bold uppercase tracking-widest ${
+                    node.type === 'flagship' ? 'text-primary-red' : 'text-muted-grey'
+                  }`}>
+                    {node.year}
+                  </span>
 
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <span className="font-mono text-xs text-muted-grey/60 uppercase tracking-widest font-bold block mb-3">Coursework Focus</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {["Data Structures", "DBMS", "Operating Systems", "Java", "Python Programming", "Relational Algebra", "SQL", "Web Applications"].map((course) => (
-                    <span
-                      key={course}
-                      className="font-sans text-xs text-fdf3f2/80 bg-white/5 border border-white/5 px-3 py-1 rounded-full"
-                    >
-                      {course}
-                    </span>
-                  ))}
-                </div>
+                  <h4 className="text-lg font-bold text-fdf3f2 mt-1 leading-tight">
+                    {node.title}
+                  </h4>
+                  <span className="font-mono text-[10px] text-primary-red/70 uppercase tracking-wider">
+                    {node.subtitle}
+                  </span>
+                  <p className="text-sm text-muted-grey leading-relaxed mt-2 max-w-lg">
+                    {node.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Coursework Focus */}
+            <div className="mt-10 border-t border-white/10 pt-6">
+              <span className="font-mono text-xs text-muted-grey/60 uppercase tracking-widest font-bold block mb-3">Coursework Focus</span>
+              <div className="flex flex-wrap gap-1.5">
+                {["Data Structures", "DBMS", "Operating Systems", "Java", "Python Programming", "Relational Algebra", "SQL", "Web Applications"].map((course) => (
+                  <span
+                    key={course}
+                    className="font-sans text-xs text-fdf3f2/80 bg-white/5 border border-white/5 px-3 py-1 rounded-full"
+                  >
+                    {course}
+                  </span>
+                ))}
               </div>
             </div>
           </div>

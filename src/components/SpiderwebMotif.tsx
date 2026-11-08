@@ -14,6 +14,8 @@ export const SpiderwebMotif: React.FC = () => {
   
   // Track scroll position for translating the spine vertically
   const spineY = useTransform(scrollY, (latest) => -latest);
+  // Secondary background parallax layer (moves at 45% speed for spatial depth)
+  const secondarySpineY = useTransform(scrollY, (latest) => -latest * 0.45);
 
   // 2. Mouse interactive coordinate motion values (for edge pulling)
   const mouseX = useMotionValue(0);
@@ -128,11 +130,12 @@ export const SpiderwebMotif: React.FC = () => {
     };
   }, [windowWidth, edgeSide, shouldReduceMotion, mouseX, mouseY, edgeOpacity]);
 
-  // Compute a simple, high-performance spine path running along the right side of the screen
+  // Compute spine paths: foreground primary spine (right) and background parallax strand (left)
   const [spinePathData, setSpinePathData] = useState("");
+  const [secondaryPathData, setSecondaryPathData] = useState("");
 
   useEffect(() => {
-    // Generate a simple sin-wave spine running vertically along 93% width
+    // Generate foreground sin-wave spine running vertically along 93% width
     const rightX = windowWidth * 0.93;
     let d = `M ${rightX} 0`;
     
@@ -146,6 +149,18 @@ export const SpiderwebMotif: React.FC = () => {
       d += ` Q ${rightX + xOffset} ${yPos - step/2} ${rightX} ${yPos}`;
     }
     setSpinePathData(d);
+
+    // Generate deeper secondary strand along 7% width with gentler curves
+    const leftX = windowWidth * 0.07;
+    let dSec = `M ${leftX} 0`;
+    const secSegments = 6;
+    const secStep = totalHeight / secSegments;
+    for (let j = 1; j <= secSegments; j++) {
+      const ySec = j * secStep;
+      const xDev = j % 2 === 0 ? -15 : 15;
+      dSec += ` Q ${leftX + xDev} ${ySec - secStep/2} ${leftX} ${ySec}`;
+    }
+    setSecondaryPathData(dSec);
   }, [totalHeight, windowWidth]);
 
   // Standardize duration: land in 400-600ms range for entrance
@@ -153,11 +168,37 @@ export const SpiderwebMotif: React.FC = () => {
 
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none z-30 overflow-hidden select-none">
-      {/* Scrollable Group: Spine */}
+      {/* Scrollable Group: Layered Spines with Parallax Depth */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
         xmlns="http://www.w3.org/2000/svg"
       >
+        {/* Background Depth Strand (slower parallax) */}
+        <motion.g style={{ y: secondarySpineY }}>
+          {shouldReduceMotion ? (
+            <path
+              d={secondaryPathData}
+              stroke="#eb4a42"
+              strokeWidth="0.8"
+              fill="none"
+              opacity="0.12"
+            />
+          ) : (
+            <motion.path
+              d={secondaryPathData}
+              stroke="#eb4a42"
+              strokeWidth="0.9"
+              fill="none"
+              style={{
+                pathLength: smoothSpineLength,
+                opacity: 0.14,
+                willChange: 'transform, opacity'
+              }}
+            />
+          )}
+        </motion.g>
+
+        {/* Foreground Primary Spine */}
         <motion.g style={{ y: spineY }}>
           {shouldReduceMotion ? (
             <path

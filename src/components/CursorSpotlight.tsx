@@ -6,9 +6,10 @@ export const CursorSpotlight: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Disable spotlight on touch devices
+    // Disable spotlight on touch devices or reduced motion preference
     const isTouchDevice = window.matchMedia('(hover: none)').matches;
-    if (isTouchDevice) {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouchDevice || prefersReduced) {
       if (spotlightRef.current) {
         spotlightRef.current.style.display = 'none';
       }
@@ -36,5 +37,3 @@ export const CursorSpotlight: React.FC = () => {
     />
   );
 };
-
-export default CursorSpotlight;

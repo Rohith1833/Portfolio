@@ -55,7 +55,6 @@ export const Navbar: React.FC = () => {
     if (el) {
       e.preventDefault();
       el.scrollIntoView({ behavior: 'smooth' });
-      window.history.pushState(null, '', `/#/#${id}`);
       setActiveSection(id);
     }
   };
@@ -65,7 +64,6 @@ export const Navbar: React.FC = () => {
     if (hero) {
       e.preventDefault();
       hero.scrollIntoView({ behavior: 'smooth' });
-      window.history.pushState(null, '', '#/');
       setActiveSection('');
     }
   };

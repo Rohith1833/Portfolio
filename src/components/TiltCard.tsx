@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { motion, useSpring, useTransform, useMotionValue, useReducedMotion } from 'framer-motion';
 
 interface TiltCardProps {
   children: React.ReactNode;
@@ -9,6 +9,7 @@ interface TiltCardProps {
 export const TiltCard: React.FC<TiltCardProps> = ({ children, className = '' }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -46,7 +47,7 @@ export const TiltCard: React.FC<TiltCardProps> = ({ children, className = '' }) 
     y.set(0.5);
   };
 
-  if (isMobile) {
+  if (isMobile || shouldReduceMotion) {
     return <div className={className}>{children}</div>;
   }
 
@@ -62,5 +63,3 @@ export const TiltCard: React.FC<TiltCardProps> = ({ children, className = '' }) 
     </motion.div>
   );
 };
-
-export default TiltCard;
